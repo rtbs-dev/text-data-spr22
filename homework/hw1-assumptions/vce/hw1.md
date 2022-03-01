@@ -17,7 +17,7 @@ kernelspec:
 
 **Vince Egalla (ve68)**
 
-**2022/02/15**
+**2022/02/17**
 
 
 > POLONIUS\
@@ -66,10 +66,6 @@ with open('shakespeare.txt', 'r') as f:
     
 ```
 
-```{code-cell} ipython3
-content
-```
-
 Make sure this works before you continue! 
 Either way, it would likely be beneficial to have the data downloaded locally to keep from needing to re-dowload it every time.
 
@@ -96,9 +92,9 @@ import re
 # "(^[A-Z]{1}[\w ]*):\\n([\w .,:;?!'\"]*)[\\n]+(?=[A-Z])"
 
 patt = re.compile(
-    "(^[A-Z]{1}[\w ]*):" # If there is a second word, make sure it starts with a capital letter
-    "\\n([\w .,:;?!'\"]*[\\n]?[\w .,:;?!'\"\\\\]*?)"
-    "(?=\\n\\n[A-Z].*)",
+    "(^[A-Z]{1}[\w]*[ A-Z]?[\w]*):" # If there is a second word, make sure it starts with a capital letter
+    "\\n(.*?)"
+    "(?=\\n\\n|\Z)",
     flags=re.S | re.M
 )
 ```
@@ -111,15 +107,9 @@ matches = patt.findall(content)
 ```{code-cell} ipython3
 import pandas as pd
 
-table = pd.DataFrame.from_records(matches, columns=['speaker','dialogue'])
-```
+table_ts = pd.DataFrame.from_records(matches, columns=['speaker','dialogue'])
 
-```{code-cell} ipython3
-table
-```
-
-```{code-cell} ipython3
-table['speaker'].unique()
+table_ts['line_number'] = range(1, len(matches) + 1)
 ```
 
 ## Part 2
@@ -135,7 +125,70 @@ This is fairly open-ended, and you are not being judged completely on _accuracy_
 Instead, think outside the box a bit as to how you might accomplish this, and attempt to justify whatever approximations or assumptions you felt were appropriate.
 
 ```{code-cell} ipython3
+import nltk
+try:
+    nltk.data.find('tokenizers/punkt')
+    nltk.find('corpora/wordnet')
+    nltk.download('omw-1.4')
+except LookupError:
+    nltk.download('punkt')
+    nltk.download('wordnet'); 
+    
 
+from nltk.corpus import wordnet as wn
+
+wn.synsets('Shakespeare')
+
+print(wn.synset('shakespeare.n.01').part_meronyms())
+```
+
+```{code-cell} ipython3
+import requests
+
+url_A_K = "https://en.wikipedia.org/wiki/List_of_Shakespearean_characters_(A%E2%80%93K)"
+page_A_K = requests.get(url_A_K)
+
+url_L_Z = "https://en.wikipedia.org/wiki/List_of_Shakespearean_characters_(L%E2%80%93Z)"
+page_L_Z = requests.get(url_L_Z)
+```
+
+```{code-cell} ipython3
+patt2 = re.compile(
+    #"<ul><li><b>([\w ]*)</b>[\w\W]*?<i>([\w ]*)[\w\W]*?(?=\\n)",
+    "<ul><li><b>([\w ]*)</b>[\w\W]*?>([\w ]*)</a>[\w\W]*?(?=\\n)",
+    flags=re.S | re.M
+)
+```
+
+```{code-cell} ipython3
+matches_A_K = patt2.findall(page_A_K.text)
+
+table_A_K = pd.DataFrame.from_records(matches_A_K, columns=['character','play'])
+```
+
+```{code-cell} ipython3
+matches_L_Z = patt2.findall(page_L_Z.text)
+
+table_L_Z = pd.DataFrame.from_records(matches_L_Z, columns=['character','play'])
+```
+
+```{code-cell} ipython3
+table_A_Z = pd.concat([table_A_K,table_L_Z],ignore_index=True)
+```
+
+```{code-cell} ipython3
+table_ts['speaker_lower'] = table_ts['speaker'].str.lower()
+table_A_Z['character_lower'] = table_A_Z['character'].str.lower()
+```
+
+```{code-cell} ipython3
+table = table_ts\
+    .merge(table_A_Z, how='left', left_on='speaker_lower', right_on='character_lower')\
+    .drop(columns = ['speaker_lower','character','character_lower'])
+```
+
+```{code-cell} ipython3
+table['play'].value_counts()
 ```
 
 ## Part 3

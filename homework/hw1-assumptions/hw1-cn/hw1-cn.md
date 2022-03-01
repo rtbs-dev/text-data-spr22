@@ -28,8 +28,12 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from sklearn.tree import DecisionTreeClassifier 
+from sklearn.naive_bayes import GaussianNB as NB
+
 from sklearn.model_selection import train_test_split 
 from sklearn import metrics
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -262,7 +266,36 @@ Capitalized names are for named characters (not necessarily main?)
 df.loc[(df.name_cap==False)].speaker.unique()
 ```
 
-**Observation:** There are a few "ghost of" named charactes that are not all caps
+**Observation:** There are a few "ghost of" named charactes that are not all caps. 
+
+```python
+# Check for names with special characters
+# Using a regex that excludes letters and whitespace
+df.loc[df.speaker.str.contains(r'[^A-Za-z][^\S]',regex=True),'speaker'].unique()
+```
+
+```python
+# Manual fix for 'Senators, &C'
+df.loc[df.speaker=='Senators, &C','speaker'] = 'Senators'
+
+# Manual fix for 'LADY  CAPULET'
+df.loc[df.speaker=='LADY  CAPULET','speaker'] = 'LADY CAPULET'
+
+df.loc[df.speaker.str.contains(r'[^A-Za-z][^\S]',regex=True),'speaker'].unique()
+```
+
+Now that I have a "clean" set of speaker names and a variable <code>name_cap</code> to indicate whether the character's name was originally in all caps, I can transform speaker name to lowercase. This will be used to match with the kaggle dataset later
+
+```python
+# Lowercase names
+df['speaker_lower'] = df.speaker.apply(lambda x: x.lower())
+```
+
+```python
+df.head()
+```
+
+### Indexing speakers
 
 
 For each speaker, I want to get the first line index and last line index - this should give me a general idea of which speaker belongs in which play
@@ -290,7 +323,7 @@ df_main = df[(df.line_count > 1) & (df.name_cap==True)]
 ```python
 # Box plot
 plt.figure(figsize = (20,40))
-sns.boxplot(data=df_main, x='line_no',y='speaker',dodge=False)
+sns.boxplot(data=df_main, x='line_no',y='speaker_lower',dodge=False)
 ```
 
 From the figure above, I can already pick out some characters that from the same play - the last 9 (from Alonso to Francisco) are probably in the same play because their line numbers overlap and they don't have overlaps with other characters. 
@@ -333,7 +366,7 @@ From the above visualization, I suspect there are 9 plays in the text (at this p
 
 I am trying to clusters of lines based on the line number, the character's unique id number, the first line, last line, total line number and the gap between the current line and the chracter's next line. Since I know that sequential lines are likely from the same play. However, because of the recurring characters, I will set the n_clusters to be higher than 9 so I can capture when a group of recurring characters speak.
 
-This exercise is to see if an algorithm can "color" the points the same way I would color them so it's not an exact science - I'm merely using it as a visual guide. I added vertical lines to see how the labels would split the lines based on number
+This exercise is to see if an algorithm can "color" the points the same way I would color them so it's not an exact science - I'm merely using it as a visual guide. I added vertical lines for how I would "visually" split the dialogues & characters into different plays based on their clustered labels
 
 ```python
 from sklearn.cluster import KMeans
@@ -352,7 +385,7 @@ X= df_main[['id','last_line','first_line','line_count','line_no']]
 clustering = AgglomerativeClustering(n_clusters=12,linkage='ward').fit(X)
 
 # Create the plot
-plt.figure(figsize = (10,10))
+plt.figure(figsize = (12,10))
 
 plt.gca().invert_yaxis()
 
@@ -373,10 +406,13 @@ for xc in cluster_min:
 ```
 
 ```python
+# cluster_min is the first line's a character with a capped name spoke in that cluster
 sorted(cluster_min)
 ```
 
-I'm trying to estimate the play splits based on the cluster_min. From the sorted list above and the figure, I decided to split the dataset into plays at the following line numbers
+I'm trying to estimate the play splits based on the cluster_min. From the sorted list above and the figure, I decided to split the dataset into plays at the following line numbers. 
+
+From visual inspection, I suspected that the text might be split into 9 separate plays, so I chose the following list as split points. This is 100% archaic and manual and there has to be a better way of doing this.
 
 ```python
 # split at points
@@ -385,7 +421,7 @@ plays = [1107, 2103, 2876, 3503,4403,5149, 6120, 6943, 7222]
 
 ```python
 # Function to get play number:
-def play_no(row):
+def get_play_no(row):
     x= 0
     for i,v in enumerate(plays):
         if row in range(x,v):
@@ -396,16 +432,16 @@ def play_no(row):
 
 ```python
 # See if it works
-play_no(7221)
+get_play_no(7221)
 ```
 
 ```python
-# Apply it to df and df_main
-df['play_no'] = df['line_no'].apply(lambda x: play_no(x))
-df_main['play_no'] = df_main['line_no'].apply(lambda x: play_no(x))
+# Apply the fucntion to df and df_main
+df['play_no'] = df['line_no'].apply(lambda x: get_play_no(x))
+df_main['play_no'] = df_main['line_no'].apply(lambda x: get_play_no(x))
 ```
 
-Now, I want to see how my clustered labels perform witht the full text which includes non-main/ non-unique characters
+Now, I want to see how my clustered labels perform when I visualzie the full text which includes non-main/ non-unique characters
 
 ```python
 # Re-create the plot for the full df (which includes non-main characters)
@@ -416,7 +452,7 @@ sns.scatterplot(data=df,x='line_no',y='id',color=None,edgecolor=None,hue='play_n
 
 ```
 
-This does not look bad - and I have not used any actual textual data or outside source yet. Because I did not know the outcome variable (names of plpays), I chose to cluster the characters based on line numbers and other lin-number-related features to see if I could use clustering analysis. 
+Honestly, this does not look bad - and I have not used any actual textual data or outside source yet. Because I did not know the outcome variable (names of plpays), I chose to cluster the characters based on line numbers and other lin-number-related features to see if I could use clustering analysis. 
 
 
 # Check external sources
@@ -476,6 +512,16 @@ sp.head()
 ```
 
 ```python
+# Do a similar check for special characters
+sp.loc[sp.Player.str.contains(r'[^A-Za-z][^\S]',regex=True),'Player'].unique()
+```
+
+```python
+# Manual replacement for 'LADY  CAPULET'
+sp.loc[sp.Player=='LADY  CAPULET', 'Player'] = 'LADY CAPULET'
+```
+
+```python
 # Check number of rows after combining lines & dropping lines I don't need
 len(sp)
 ```
@@ -491,15 +537,11 @@ sp.Player.nunique()
 ```
 
 ```python
-sp['player'] = sp.Player.str.lower()
+# Lowercase
+sp['player_lower'] = sp.Player.str.lower()
+# Count
+sp.player_lower.nunique()
 ```
-
-```python
-sp.player.nunique()
-```
-
-sp has way more players/speakers than df
-
 
 Because tiny_shakespeare does not include all of Shakespeare's works, I have a few options:
 
@@ -512,7 +554,7 @@ Eventually, I also want to compare it to the manual labels I gave lines in df ea
 
 ### Shakespeare classifier?
 
-I decided to use the large sp data set to train a classifier to determine the name of Shakespeare's plays. 
+I decided to use the large sp data set to train a classifier to determine the name of Shakespeare's plays. Because the number of unique Player dropped from 934 to 921 after lowercase, I will create an id column to track unique Player names (non-lowercase)
 
 ```python
 # Convert Play and Player in sp into numeric values
@@ -582,6 +624,8 @@ y_train = train['Play_id']
 y_test = test['Play_id']
 ```
 
+I decided to use a simple decision tree classifier to see if I can identify the play just from the player (character).
+
 ```python
 dt = DecisionTreeClassifier()
 dt.fit(X_train, y_train)
@@ -592,52 +636,177 @@ y_pred = dt.predict(X_test)
 print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 ```
 
+Honestly, 86% accuracy really isn't bad given that I have done nothing even remotely related to text analysis
+
+
 ### Back to df
 
 ```python
+# Get a dictionary of player name and unique id number from sp to apply it to 
 player_df = sp.drop_duplicates(subset=['Player','Player_id'])
-player_dict = dict(zip(player_df.Player, player_df.Player_id))
-```
-
-```python
-player_dict
+player_dict = dict(zip(player_df.player_lower, player_df.Player_id))
 ```
 
 ```python
 # Subset df into something cleaner but keeping play_no from clustering above for prosperity 
-tiny_df = df[['line_no','speaker','dialogue','play_no']]
+tiny_df = df[['line_no','id','speaker','dialogue','play_no', 'speaker_lower']]
 
 ```
 
 ```python
 # Map Player_id from sp to df
-tiny_df['Player_id'] = tiny_df.speaker.map(player_dict)
+tiny_df['player_id'] = tiny_df.speaker_lower.map(player_dict)
 tiny_df.head()
 ```
 
 ```python
 # Check for NAs
-tiny_df[tiny_df.Player_id.isna()]
+tiny_df[tiny_df.player_id.isna()]
 ```
 
 The NAs are from so few lines that I think I'll drop them *for now* so I can move on with the rest of the homework
 
 ```python
-tiny_df = tiny_df[tiny_df.Player_id.notna()]
+tiny_df = tiny_df[tiny_df.player_id.notna()]
 # Re-map
-tiny_df['Player_id'] = tiny_df.speaker.map(player_dict)
-
-tiny_df.tail()
+tiny_df['player_id'] = tiny_df.speaker_lower.map(player_dict)
 ```
 
 ```python
-#Predict
-tiny_pred = dt.predict(tiny_df[['Player_id']])
+# Predict with the DT earlier
+tiny_pred = dt.predict(tiny_df[['player_id']])
 ```
 
 ```python
-tiny_df.Player_id.nunique()
+# Attach labels
+tiny_df['pred_labels'] = tiny_pred
 ```
+
+```python
+tiny_df.pred_labels.nunique()
+```
+
+The decision tree classifier trained on the full kaggle dataset returned 30 different plays for the tiny shakespeare data. I still have no way to check until I give the dialogues in tiny_df an actual play name. However, because I wasted so much time with the "visual" labels thing earlier, I might as well check it now.
+
+```python
+# Re-create the plot for the full df (which includes non-main characters)
+plt.figure(figsize = (10,10))
+
+plt.gca().invert_yaxis()
+sns.scatterplot(data=tiny_df,x='line_no',y='id',color=None,edgecolor=None,hue='pred_labels',palette='deep',alpha=1)
+
+```
+
+This also doens't look too bad. However, in order to check for the accuracy of the first method vs this decision tree classifier, I need to have ground truth labels for play name in the tiny_shakespeare dataset.
+
+
+### Ground truth?
+
+
+I will assemble a "corpus" for everything a Player said in each play.
+
+```python
+# Create a deep copy
+sp_corpus = sp.copy(deep=True)
+
+# Combine all the lines a character says in a play into a corpus
+sp_corpus['player_corpus']= sp_corpus.groupby(['Play','Player'])['dialogue'].transform(lambda x : ' '.join(x))
+```
+
+```python
+sp_corpus = sp_corpus.drop_duplicates(subset=['player_corpus']).reset_index(drop=True)
+```
+
+```python
+# Drop irrelevant columns
+sp_corpus = sp_corpus[['Play','Player','player_lower','Play_id','player_corpus']]
+```
+
+```python
+sp_corpus.head()
+```
+
+```python
+def get_play_gt(row):
+    '''Function to find the play name with exact match'''
+    # Crop sp_corpus to rows where speaker name match
+    temp = sp_corpus[sp_corpus.player_lower == tiny_df.speaker_lower[row]]
+
+    # Get a list of row index for temp df
+    index_list = temp.index
+    
+    for i in range(len(index_list)):
+        # If the dialogue is in that corpus, return the play name and play id
+        # If not, look at the next corpus (another play) for a character with that name
+        
+        if tiny_df.dialogue[row] in temp.player_corpus[index_list[i]]:
+            play_gt = temp.Play[index_list[i]] #gt means ground truth
+            return play_gt
+        else:        
+            i += 1
+```
+
+```python
+def get_play_id_gt(row):
+    '''Function to find the play id with exact match'''
+    # Crop sp_corpus to rows where speaker name match
+    temp = sp_corpus[sp_corpus.player_lower == tiny_df.speaker_lower[row]]
+
+    # Get a list of row index for temp df
+    index_list = temp.index
+    
+    for i in range(len(index_list)):
+        # If the dialogue is in that corpus, return the play name and play id
+        # If not, look at the next corpus (another play) for a character with that name
+        
+        if tiny_df.dialogue[row] in temp.player_corpus[index_list[i]]:
+            play_id_gt = temp.Play_id[index_list[i]] #gt means ground truth
+            return play_id_gt
+        else:        
+            i += 1
+```
+
+```python
+# Check to see if function works
+get_play_gt(1000), get_play_id_gt(1000)
+```
+
+```python
+# Apply it to tiny df
+tiny_df['play_gt'] = tiny_df['line_no'].apply(lambda x: get_play_gt(x))
+tiny_df['play_id_gt'] = tiny_df['line_no'].apply(lambda x: get_play_id_gt(x))
+
+```
+
+```python
+tiny_df.tail(10)
+```
+
+```python
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+```
+
+```python
+# Re-create the plot for the full df (which includes non-main characters)
+plt.figure(figsize = (15,15))
+
+plt.gca().invert_yaxis()
+sns.scatterplot(data=tiny_df,x='line_no',y='id',color=None,edgecolor=None,hue='play_gt',palette='Paired',alpha=1)
+
+
+play_id_min =[]
+for i in tiny_df.play_id_gt.unique():
+    cmin = tiny_df[tiny_df.play_id_gt==i]['line_no'].min()
+    play_id_min.append(cmin)
+
+# Plot vertical lines to do visual check
+for xc in play_id_min:
+    plt.axvline(x=xc, color='black', linewidth=0.5)
+```
+
+Above is the visualization of the "ground truth" labels that I got from kaggle. I honestly wish the dataset came with the ground truth because figuring out how to merge the 2 datasets to find the ground truth label for each line took a lot of effort, and even now I still don't know if this is correct or not.
+
 
 ### Part 3
 
@@ -668,8 +837,65 @@ This is mostly about learning to transparently document your decisions, and iter
 
 
 
-```python
 
+### Term Frequence - Inverse Document Frequency
+
+
+```python
+# Use ffill to fill in ground truth labels for names I still couldn't fill before
+tiny_df['play_gt'] = tiny_df['play_gt'].fillna(method = 'ffill')
+```
+
+I assume that for each play, the most "interesting" character would:
+
+* Use words that are more frequent in their dialogue to highlight their importance
+
+* These words are only frequent in this character's dialogues but not accross dialogues from other characters in the same play
+
+Thus I chose to use the TFIDF to find these important characters.
+
+I also had to assume that the ground truth label I gave each line is correct, because I want to isolate one play from another. I will use The Tempest as an example
+
+```python
+tempest = tiny_df[tiny_df.play_gt=='The Tempest'].reset_index(drop=True)
+```
+
+```python
+tempest
+```
+
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+# list of dialogues in tempest
+text = tempest.dialogue
+text
+```
+
+```python
+vectorizer = TfidfVectorizer()
+feature_matrix = vectorizer.fit_transform(text)
+
+```
+
+```python
+# Get a df of features and tfidf scores
+tdf = pd.DataFrame(feature_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+
+```
+
+```python
+# For each dialogue, sum the tfidf of each word
+tdf['sum'] = tdf.sum(axis=1)
+
+```
+
+```python
+tdf.loc[tdf['sum']==tdf['sum'].max()]
+```
+
+```python
+#print the most "interesting" text
+text[51]
 ```
 
 ```python
@@ -678,38 +904,6 @@ This is mostly about learning to transparently document your decisions, and iter
 
 ```python
 
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-df
 ```
 
 ```python

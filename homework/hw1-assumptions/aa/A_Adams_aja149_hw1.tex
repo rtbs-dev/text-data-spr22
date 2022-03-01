@@ -1,0 +1,1969 @@
+\documentclass[11pt]{article}
+
+    \usepackage[breakable]{tcolorbox}
+    \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
+    
+    \usepackage{iftex}
+    \ifPDFTeX
+    	\usepackage[T1]{fontenc}
+    	\usepackage{mathpazo}
+    \else
+    	\usepackage{fontspec}
+    \fi
+
+    % Basic figure setup, for now with no caption control since it's done
+    % automatically by Pandoc (which extracts ![](path) syntax from Markdown).
+    \usepackage{graphicx}
+    % Maintain compatibility with old templates. Remove in nbconvert 6.0
+    \let\Oldincludegraphics\includegraphics
+    % Ensure that by default, figures have no caption (until we provide a
+    % proper Figure object with a Caption API and a way to capture that
+    % in the conversion process - todo).
+    \usepackage{caption}
+    \DeclareCaptionFormat{nocaption}{}
+    \captionsetup{format=nocaption,aboveskip=0pt,belowskip=0pt}
+
+    \usepackage[Export]{adjustbox} % Used to constrain images to a maximum size
+    \adjustboxset{max size={0.9\linewidth}{0.9\paperheight}}
+    \usepackage{float}
+    \floatplacement{figure}{H} % forces figures to be placed at the correct location
+    \usepackage{xcolor} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{textcomp} % defines textquotesingle
+    % Hack from http://tex.stackexchange.com/a/47451/13684:
+    \AtBeginDocument{%
+        \def\PYZsq{\textquotesingle}% Upright quotes in Pygmentized code
+    }
+    \usepackage{upquote} % Upright quotes for verbatim code
+    \usepackage{eurosym} % defines \euro
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range
+    \makeatletter % fix for grffile with XeLaTeX
+    \def\Gread@@xetex#1{%
+      \IfFileExists{"\Gin@base".bb}%
+      {\Gread@eps{\Gin@base.bb}}%
+      {\Gread@@xetex@aux#1}%
+    }
+    \makeatother
+
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    % The default LaTeX title has an obnoxious amount of whitespace. By default,
+    % titling removes some of it. It also provides customization options.
+    \usepackage{titling}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage[inline]{enumitem} % IRkernel/repr support (it uses the enumerate* environment)
+    \usepackage[normalem]{ulem} % ulem is needed to support strikethroughs (\sout)
+                                % normalem makes italics be italics, not underlines
+    \usepackage{mathrsfs}
+    
+
+    
+    % Colors for the hyperref package
+    \definecolor{urlcolor}{rgb}{0,.145,.698}
+    \definecolor{linkcolor}{rgb}{.71,0.21,0.01}
+    \definecolor{citecolor}{rgb}{.12,.54,.11}
+
+    % ANSI colors
+    \definecolor{ansi-black}{HTML}{3E424D}
+    \definecolor{ansi-black-intense}{HTML}{282C36}
+    \definecolor{ansi-red}{HTML}{E75C58}
+    \definecolor{ansi-red-intense}{HTML}{B22B31}
+    \definecolor{ansi-green}{HTML}{00A250}
+    \definecolor{ansi-green-intense}{HTML}{007427}
+    \definecolor{ansi-yellow}{HTML}{DDB62B}
+    \definecolor{ansi-yellow-intense}{HTML}{B27D12}
+    \definecolor{ansi-blue}{HTML}{208FFB}
+    \definecolor{ansi-blue-intense}{HTML}{0065CA}
+    \definecolor{ansi-magenta}{HTML}{D160C4}
+    \definecolor{ansi-magenta-intense}{HTML}{A03196}
+    \definecolor{ansi-cyan}{HTML}{60C6C8}
+    \definecolor{ansi-cyan-intense}{HTML}{258F8F}
+    \definecolor{ansi-white}{HTML}{C5C1B4}
+    \definecolor{ansi-white-intense}{HTML}{A1A6B2}
+    \definecolor{ansi-default-inverse-fg}{HTML}{FFFFFF}
+    \definecolor{ansi-default-inverse-bg}{HTML}{000000}
+
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatibility definitions
+    \def\gt{>}
+    \def\lt{<}
+    \let\Oldtex\TeX
+    \let\Oldlatex\LaTeX
+    \renewcommand{\TeX}{\textrm{\Oldtex}}
+    \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
+    % Document parameters
+    % Document title
+    \title{A\_Adams\_aja149\_hw1}
+    
+    
+    
+    
+    
+% Pygments definitions
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@fm\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vm\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sa\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@dl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@mb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ch\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cpf\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % For linebreaks inside Verbatim environment from package fancyvrb. 
+    \makeatletter
+        \newbox\Wrappedcontinuationbox 
+        \newbox\Wrappedvisiblespacebox 
+        \newcommand*\Wrappedvisiblespace {\textcolor{red}{\textvisiblespace}} 
+        \newcommand*\Wrappedcontinuationsymbol {\textcolor{red}{\llap{\tiny$\m@th\hookrightarrow$}}} 
+        \newcommand*\Wrappedcontinuationindent {3ex } 
+        \newcommand*\Wrappedafterbreak {\kern\Wrappedcontinuationindent\copy\Wrappedcontinuationbox} 
+        % Take advantage of the already applied Pygments mark-up to insert 
+        % potential linebreaks for TeX processing. 
+        %        {, <, #, %, $, ' and ": go to next line. 
+        %        _, }, ^, &, >, - and ~: stay at end of broken line. 
+        % Use of \textquotesingle for straight quote. 
+        \newcommand*\Wrappedbreaksatspecials {% 
+            \def\PYGZus{\discretionary{\char`\_}{\Wrappedafterbreak}{\char`\_}}% 
+            \def\PYGZob{\discretionary{}{\Wrappedafterbreak\char`\{}{\char`\{}}% 
+            \def\PYGZcb{\discretionary{\char`\}}{\Wrappedafterbreak}{\char`\}}}% 
+            \def\PYGZca{\discretionary{\char`\^}{\Wrappedafterbreak}{\char`\^}}% 
+            \def\PYGZam{\discretionary{\char`\&}{\Wrappedafterbreak}{\char`\&}}% 
+            \def\PYGZlt{\discretionary{}{\Wrappedafterbreak\char`\<}{\char`\<}}% 
+            \def\PYGZgt{\discretionary{\char`\>}{\Wrappedafterbreak}{\char`\>}}% 
+            \def\PYGZsh{\discretionary{}{\Wrappedafterbreak\char`\#}{\char`\#}}% 
+            \def\PYGZpc{\discretionary{}{\Wrappedafterbreak\char`\%}{\char`\%}}% 
+            \def\PYGZdl{\discretionary{}{\Wrappedafterbreak\char`\$}{\char`\$}}% 
+            \def\PYGZhy{\discretionary{\char`\-}{\Wrappedafterbreak}{\char`\-}}% 
+            \def\PYGZsq{\discretionary{}{\Wrappedafterbreak\textquotesingle}{\textquotesingle}}% 
+            \def\PYGZdq{\discretionary{}{\Wrappedafterbreak\char`\"}{\char`\"}}% 
+            \def\PYGZti{\discretionary{\char`\~}{\Wrappedafterbreak}{\char`\~}}% 
+        } 
+        % Some characters . , ; ? ! / are not pygmentized. 
+        % This macro makes them "active" and they will insert potential linebreaks 
+        \newcommand*\Wrappedbreaksatpunct {% 
+            \lccode`\~`\.\lowercase{\def~}{\discretionary{\hbox{\char`\.}}{\Wrappedafterbreak}{\hbox{\char`\.}}}% 
+            \lccode`\~`\,\lowercase{\def~}{\discretionary{\hbox{\char`\,}}{\Wrappedafterbreak}{\hbox{\char`\,}}}% 
+            \lccode`\~`\;\lowercase{\def~}{\discretionary{\hbox{\char`\;}}{\Wrappedafterbreak}{\hbox{\char`\;}}}% 
+            \lccode`\~`\:\lowercase{\def~}{\discretionary{\hbox{\char`\:}}{\Wrappedafterbreak}{\hbox{\char`\:}}}% 
+            \lccode`\~`\?\lowercase{\def~}{\discretionary{\hbox{\char`\?}}{\Wrappedafterbreak}{\hbox{\char`\?}}}% 
+            \lccode`\~`\!\lowercase{\def~}{\discretionary{\hbox{\char`\!}}{\Wrappedafterbreak}{\hbox{\char`\!}}}% 
+            \lccode`\~`\/\lowercase{\def~}{\discretionary{\hbox{\char`\/}}{\Wrappedafterbreak}{\hbox{\char`\/}}}% 
+            \catcode`\.\active
+            \catcode`\,\active 
+            \catcode`\;\active
+            \catcode`\:\active
+            \catcode`\?\active
+            \catcode`\!\active
+            \catcode`\/\active 
+            \lccode`\~`\~ 	
+        }
+    \makeatother
+
+    \let\OriginalVerbatim=\Verbatim
+    \makeatletter
+    \renewcommand{\Verbatim}[1][1]{%
+        %\parskip\z@skip
+        \sbox\Wrappedcontinuationbox {\Wrappedcontinuationsymbol}%
+        \sbox\Wrappedvisiblespacebox {\FV@SetupFont\Wrappedvisiblespace}%
+        \def\FancyVerbFormatLine ##1{\hsize\linewidth
+            \vtop{\raggedright\hyphenpenalty\z@\exhyphenpenalty\z@
+                \doublehyphendemerits\z@\finalhyphendemerits\z@
+                \strut ##1\strut}%
+        }%
+        % If the linebreak is at a space, the latter will be displayed as visible
+        % space at end of first line, and a continuation symbol starts next line.
+        % Stretch/shrink are however usually zero for typewriter font.
+        \def\FV@Space {%
+            \nobreak\hskip\z@ plus\fontdimen3\font minus\fontdimen4\font
+            \discretionary{\copy\Wrappedvisiblespacebox}{\Wrappedafterbreak}
+            {\kern\fontdimen2\font}%
+        }%
+        
+        % Allow breaks at special characters using \PYG... macros.
+        \Wrappedbreaksatspecials
+        % Breaks at punctuation characters . , ; ? ! and / need catcode=\active 	
+        \OriginalVerbatim[#1,codes*=\Wrappedbreaksatpunct]%
+    }
+    \makeatother
+
+    % Exact colors from NB
+    \definecolor{incolor}{HTML}{303F9F}
+    \definecolor{outcolor}{HTML}{D84315}
+    \definecolor{cellborder}{HTML}{CFCFCF}
+    \definecolor{cellbackground}{HTML}{F7F7F7}
+    
+    % prompt
+    \makeatletter
+    \newcommand{\boxspacing}{\kern\kvtcb@left@rule\kern\kvtcb@boxsep}
+    \makeatother
+    \newcommand{\prompt}[4]{
+        \ttfamily\llap{{\color{#2}[#3]:\hspace{3pt}#4}}\vspace{-\baselineskip}
+    }
+    
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=urlcolor,
+      linkcolor=linkcolor,
+      citecolor=citecolor,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+\begin{document}
+    
+    \maketitle
+    
+    
+
+    
+    \hypertarget{alexander-adams}{%
+\section{Alexander Adams}\label{alexander-adams}}
+
+\hypertarget{aja149}{%
+\section{aja149}\label{aja149}}
+
+\hypertarget{homework-1-words-words-words}{%
+\section{Homework \#1: Words, Words,
+Words}\label{homework-1-words-words-words}}
+
+\hypertarget{ppol628-text-as-data}{%
+\section{PPOL628 Text as Data}\label{ppol628-text-as-data}}
+
+    \hypertarget{homework-state-your-assumptions}{%
+\section{Homework: State Your
+Assumptions}\label{homework-state-your-assumptions}}
+
+\begin{quote}
+POLONIUS What do you read, my lord?
+\end{quote}
+
+\begin{quote}
+HAMLET Words, words, words
+\end{quote}
+
+\begin{quote}
+-- Hamlet, Act 2, Scene 2
+\end{quote}
+
+\hypertarget{this-homework-deals-with-the-assumptions-made-when-taking-text-from-its-original-raw-form-into-something-more-computable.}{%
+\subsection{This homework deals with the assumptions made when taking
+text from its original ``raw'' form into something more
+computable.}\label{this-homework-deals-with-the-assumptions-made-when-taking-text-from-its-original-raw-form-into-something-more-computable.}}
+
+\begin{itemize}
+\tightlist
+\item
+  Assumptions about the shape of text (e.g.~how to break a corpus into
+  documents)
+\item
+  Assumptions about what makes a token, an entity, etc.
+\item
+  Assumptions about what interesting or important content looks like,
+  and how that informs our analyses.
+\end{itemize}
+
+\hypertarget{there-are-three-parts}{%
+\subsection{There are three parts:}\label{there-are-three-parts}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Splitting Lines from Shakespeare
+\item
+  Tokenizing and Aligning lines into plays
+\item
+  Assessing and comparing characters from within each play
+\end{enumerate}
+
+\emph{NB This file is merely a template, with instructions; do not feel
+constrained to using it directly if you do not wish to.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+    \hypertarget{get-the-data}{%
+\subsection{Get the Data}\label{get-the-data}}
+
+Since the class uses dvc, it is possible to get this dataset either
+using the command line (e.g.~dvc import
+https://github.com/TLP-COI/text-data-course
+resources/data/shakespeare/shakespeare.txt), or using the python api (if
+you wish to use python):
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{1}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}I could not get the dvc.api read function to work. It consistenly produced the following error:}
+\PY{c+c1}{\PYZsh{}AttributeError: \PYZsq{}HashFile\PYZsq{} object has no attribute \PYZsq{}get\PYZsq{}}
+
+\PY{c+c1}{\PYZsh{}I switched to this import method because it was the only way I could actually read in the text file.}
+
+\PY{c+c1}{\PYZsh{}from dvc.api import read,get\PYZus{}url}
+\PY{c+c1}{\PYZsh{}import pandas as pd}
+
+\PY{c+c1}{\PYZsh{}txt = pd.read\PYZus{}csv(\PYZsq{}shakespeare.txt\PYZsq{}, sep = \PYZsq{}\PYZbs{}n\PYZsq{}, header = None)}
+
+\PY{c+c1}{\PYZsh{}print(txt[:250])}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{2}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Use relative path because shakespeare.txt is in parent directory}
+\PY{k}{with} \PY{n+nb}{open}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{..}\PY{l+s+s1}{\PYZbs{}}\PY{l+s+s1}{..}\PY{l+s+s1}{\PYZbs{}}\PY{l+s+s1}{..}\PY{l+s+s1}{\PYZbs{}}\PY{l+s+s1}{shakespeare.txt}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)} \PY{k}{as} \PY{n}{f}\PY{p}{:}
+    \PY{n}{lines} \PY{o}{=} \PY{n}{f}\PY{o}{.}\PY{n}{read}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Make sure this works before you continue! Either way, it would likely be
+beneficial to have the data downloaded locally to keep from needing to
+re-dowload it every time.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+    \hypertarget{part-1}{%
+\section{Part 1}\label{part-1}}
+
+Split the text file into a table, such that:
+
+\begin{verbatim}
+-each row is a single line of dialogue
+-there are columns for:
+    *the speaker
+    *the line number
+    *the line dialogue (the text)
+\end{verbatim}
+
+\emph{Hint: you will need to use RegEx to do this rapidly. See the
+in-class ``markdown'' example!}
+
+Question(s):
+
+\begin{verbatim}
+*What assumptions have you made about the text that allowed you to do this?
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{3}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Import the re package for regex}
+\PY{k+kn}{import} \PY{n+nn}{pandas} \PY{k}{as} \PY{n+nn}{pd}
+\PY{n}{pd}\PY{o}{.}\PY{n}{set\PYZus{}option}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{display.max\PYZus{}rows}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{k+kc}{None}\PY{p}{)}
+\PY{n}{pd}\PY{o}{.}\PY{n}{set\PYZus{}option}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{display.width}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{k+kc}{None}\PY{p}{)}
+\PY{n}{pd}\PY{o}{.}\PY{n}{set\PYZus{}option}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{display.max\PYZus{}colwidth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{k+kc}{None}\PY{p}{)}
+\PY{k+kn}{import} \PY{n+nn}{re}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Each chunk of text contains two parts, a speaker and the dialogue.
+
+The key assumptions to be made here are that the speaker's name is
+always followed by a colon and a new line(``:\n''), and each chunk of
+text is followed by two new lines:
+
+Speaker\_Name:\n Text\n\n
+
+    Note: In the interest of full disclosure, I initially tried to get away
+with using as little regex for this part as possible. I've preserved my
+original solution (which works perfectly fine as far as I can tell, but
+eschews regex almost entirely in favor of pandas string methods) as
+commented code below.
+
+The regex patterns below were posted by Professor Sexton and Ella Zhang
+in our class slack. I've included original explanations, and tried to
+modify the patterns so that I wasn't just copying outright. (The only
+real modification I made was swapping out a plus sign in the first
+pattern for \{1,\}. While this is functionally the same but longer and
+therefore worse, it's at least an original contribution to this.)
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{103}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Goal: create two patterns}
+\PY{c+c1}{\PYZsh{}1) Pattern to capture speaker}
+\PY{c+c1}{\PYZsh{}2) Pattern to capture dialogue}
+
+\PY{n}{shakespeare\PYZus{}pattern} \PY{o}{=} \PY{n}{re}\PY{o}{.}\PY{n}{compile}\PY{p}{(}
+    \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{(\PYZca{}[A\PYZhy{}Z].}\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{1,\PYZcb{}?):\PYZdl{}}\PY{l+s+s2}{\PYZdq{}} \PY{c+c1}{\PYZsh{}Speaker pattern}
+    \PY{l+s+s2}{\PYZdq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+si}{\PYZob{}1\PYZcb{}}\PY{l+s+s2}{(.*?)}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+si}{\PYZob{}2\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{c+c1}{\PYZsh{}Dialogue pattern}
+    \PY{n}{flags} \PY{o}{=} \PY{n}{re}\PY{o}{.}\PY{n}{S} \PY{o}{|} \PY{n}{re}\PY{o}{.}\PY{n}{M}
+\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    The first pattern above is as follows: (\footnote{A-Z}.+?):\$. First,
+let's consider the characters inside the parentheses. The caret
+indicates the start of a pattern. The square brackets with A-Z in them
+mean that there will be a capital letter. Periods can be any character,
+and a character followed by a number in curly braces must occur that
+many times. In this case, the number is followed by a comma, which means
+the preceding token can occur that number of times or more. The question
+mark modifies the number-comma in curly braces by making it ``lazy''. In
+regex terms, this means that while it can match any number of characters
+corresponding to the preceding token, a lazy version will match the
+minimum characters necessary. Taken all together, this pattern means
+that the line must start with a capital letter, then be followed by any
+sequence of characters, as long as it takes but as few as possible to
+fulfill the pattern. The colon is standard character (in this case, it's
+intended to match the colon after the speaker's name), and the dollar
+sign ends the line.
+
+The second pattern above is as follows: \n{1}(.*?)\n{2}. Conceptually,
+this one is a bit simpler. ``\n'' indicates a new line, and a number in
+curly brackets hard-codes the number of times the preceding token can
+occur. Thus, \n{1} will match an occurrence of one new line. The
+parentheses demarcate a group, as before. The period can be anything,
+and the asterisk means that token can occur any number of times. The
+question mark, as before, makes the asterisk lazy. All together, this
+parenthetical group matches any token, any number of times, as few
+tokens as possible. This pattern is then followed by \n{2}, which
+matches two new lines. All together, this pattern captures the new line
+at the start of the line, then all the textual characters on the row,
+and then the two lines which separate this chunk of text from the next
+one.
+
+The last parts of the regex expression above are the two flags. In the
+\texttt{re} package for Python, \texttt{re.S} allows the period to match
+a new line character. Without this flag, the period can match any
+character except a new line. The \texttt{re.M} flag lets the caret and
+dollar sign work at the start and end of a given line, rather than just
+at the start and end of a whole string. These flags are separated by an
+OR operator, indicating that only one needs to match for a match to be
+valid.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{106}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text} \PY{o}{=} \PY{n}{shakespeare\PYZus{}pattern}\PY{o}{.}\PY{n}{findall}\PY{p}{(}\PY{n}{lines}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{109}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{matches1}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{110}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Rename columns for ease of use}
+\PY{n}{text} \PY{o}{=} \PY{n}{text}\PY{o}{.}\PY{n}{rename}\PY{p}{(}\PY{n}{columns} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{0}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+                              \PY{l+m+mi}{1}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Text}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{4}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Original solution with minimal regex:}
+
+\PY{c+c1}{\PYZsh{}1) Split the text using two new lines as a delimiter}
+\PY{c+c1}{\PYZsh{}text = re.split(r\PYZsq{}\PYZbs{}n\PYZbs{}n\PYZsq{},lines)}
+
+\PY{c+c1}{\PYZsh{}2) Convert to a pandas dataframe}
+\PY{c+c1}{\PYZsh{}text = pd.DataFrame(text, columns = [\PYZsq{}text\PYZsq{}])}
+
+\PY{c+c1}{\PYZsh{}3) Call the split method on the string attribute to split the text column into 2, }
+\PY{c+c1}{\PYZsh{}using the colon followed by a new line as the delimiter. }
+\PY{c+c1}{\PYZsh{}text = text[\PYZsq{}text\PYZsq{}].str.split(\PYZsq{}:\PYZbs{}n\PYZsq{}, 1, expand=True)}
+
+\PY{c+c1}{\PYZsh{}\PYZti{}\PYZti{}4) Then use the `split` method again to break each chunk up into individual lines, followed by }
+\PY{c+c1}{\PYZsh{}the `explode` function to make each individual line its own row. Call `reset\PYZus{}index` with }
+\PY{c+c1}{\PYZsh{}`drop = True` to drop the index column, which has the same value for all lines which were part}
+\PY{c+c1}{\PYZsh{}of the same original chunk.\PYZti{}\PYZti{}}
+
+\PY{c+c1}{\PYZsh{}EDIT: As per the discussion in the slack channel, this step is not necessary. I\PYZsq{}ve included }
+\PY{c+c1}{\PYZsh{}the below two cells, commented out, to show what I would have done to split each chunk of }
+\PY{c+c1}{\PYZsh{}dialogue into individual lines. }
+
+\PY{c+c1}{\PYZsh{}text[1] = text[1].str.split(\PYZsq{}\PYZbs{}n\PYZsq{})}
+\PY{c+c1}{\PYZsh{}text = text.explode(1).reset\PYZus{}index(drop = True)}
+
+
+\PY{c+c1}{\PYZsh{}5) Finally, reset the index to create a column of integer values for line numbers, }
+\PY{c+c1}{\PYZsh{}and then add one to each item in that column because Python is a zero\PYZhy{}indexed language. }
+\PY{c+c1}{\PYZsh{}Rename the columns in the data frame for clarity. }
+\PY{c+c1}{\PYZsh{}text = text.reset\PYZus{}index().rename(columns = \PYZob{}\PYZsq{}index\PYZsq{}: \PYZsq{}Line\PYZus{}Number\PYZsq{}, }
+\PY{c+c1}{\PYZsh{}                                            0: \PYZsq{}Speaker\PYZsq{},}
+\PY{c+c1}{\PYZsh{}                                            1: \PYZsq{}Text\PYZsq{}\PYZcb{})}
+\PY{c+c1}{\PYZsh{}text[\PYZsq{}Line\PYZus{}Number\PYZsq{}] = text[\PYZsq{}Line\PYZus{}Number\PYZsq{}]+1}
+\PY{c+c1}{\PYZsh{}text.head(10)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{longtable}[]{@{}l@{}}
+\toprule
+\endhead
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+\#\# Part 2\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+\#\#\#\# You have likely noticed that the lines are not all from the
+same play! Now, we will add some useful metadata to our table:\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+-Determine a likely source title for each line. -Add the title as a
+`play' column in the data table. -Make sure to document your decisions,
+assumptions, external data sources, etc.\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.07\columnwidth}\raggedright
+This is fairly open-ended, and you are not being judged completely on
+accuracy. Instead, think outside the box a bit as to how you might
+accomplish this, and attempt to justify whatever approximations or
+assumptions you felt were appropriate.\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{111}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Just for fun, let\PYZsq{}s see a list of all unique speakers in the table:}
+\PY{n}{text}\PY{o}{.}\PY{n}{Speaker}\PY{o}{.}\PY{n}{unique}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{111}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+array(['First Citizen', 'All', 'Second Citizen', 'MENENIUS', 'MARCIUS',
+       'Messenger', 'First Senator', 'COMINIUS', 'TITUS', 'SICINIUS',
+       'BRUTUS', 'AUFIDIUS', 'Second Senator', 'VOLUMNIA', 'VIRGILIA',
+       'Gentlewoman', 'VALERIA', 'LARTIUS', 'First Soldier',
+       'Second Soldier', 'First Roman', 'Second Roman', 'Third Roman',
+       'Lieutenant', 'CORIOLANUS', 'Both', 'Herald', 'First Officer',
+       'Second Officer', 'Officer', 'Senators', 'Third Citizen',
+       'Fourth Citizen', 'Fifth Citizen', 'Both Citizens',
+       'Sixth Citizen', 'Seventh Citizen', 'All Citizens', 'Citizens',
+       'Senators, \&C', 'AEdile', 'A Patrician', 'Second Patrician',
+       'Both Tribunes', 'Roman', 'Volsce', 'Citizen', 'First Servingman',
+       'Second Servingman', 'Third Servingman', 'Second Messenger',
+       'Young MARCIUS', 'First Conspirator', 'Second Conspirator',
+       'Third Conspirator', 'All The Lords', 'Lords', 'First Lord',
+       'All Conspirators', 'All The People', 'Second Lord', 'Third Lord',
+       'GLOUCESTER', 'CLARENCE', 'BRAKENBURY', 'HASTINGS', 'LADY ANNE',
+       'Gentleman', 'GENTLEMEN', 'RIVERS', 'GREY', 'QUEEN ELIZABETH',
+       'BUCKINGHAM', 'DERBY', 'QUEEN MARGARET', 'DORSET', 'CATESBY',
+       'First Murderer', 'Second Murderer', 'Second murderer',
+       'KING EDWARD IV', 'Boy', 'DUCHESS OF YORK', 'Girl', 'Children',
+       'ARCHBISHOP OF YORK', 'YORK', 'PRINCE EDWARD', 'Lord Mayor',
+       'CARDINAL', 'STANLEY', 'LORD STANLEY', 'Pursuivant', 'Priest',
+       'RATCLIFF', 'VAUGHAN', 'BISHOP OF ELY', 'LOVEL', 'Scrivener',
+       'ANOTHER', 'KING RICHARD III', 'Page', 'TYRREL', 'Third Messenger',
+       'Fourth Messenger', 'CHRISTOPHER', 'Sheriff', 'RICHMOND', 'OXFORD',
+       'HERBERT', 'BLUNT', 'SURREY', 'NORFOLK', 'Ghost of Prince Edward',
+       'Ghost of CLARENCE', 'Ghost of GREY', 'Ghosts of young Princes',
+       'Ghost of BUCKINGHAM', 'LORDS', 'KING RICHARD II', 'JOHN OF GAUNT',
+       'HENRY BOLINGBROKE', 'THOMAS MOWBRAY', 'DUCHESS', 'Lord Marshal',
+       'DUKE OF AUMERLE', 'First Herald', 'Second Herald', 'GREEN',
+       'BUSHY', 'DUKE OF YORK', 'QUEEN', 'NORTHUMBERLAND', 'LORD ROSS',
+       'LORD WILLOUGHBY', 'Servant', 'BAGOT', 'HENRY PERCY',
+       'LORD BERKELEY', 'Captain', 'EARL OF SALISBURY',
+       'BISHOP OF CARLISLE', 'SIR STEPHEN SCROOP', 'Lady', 'Gardener',
+       'GARDENER', 'LORD FITZWATER', 'Lord', 'DUKE OF SURREY', 'Abbot',
+       'EXTON', 'Groom', 'Keeper', 'SAMPSON', 'GREGORY', 'ABRAHAM',
+       'BENVOLIO', 'TYBALT', 'CAPULET', 'LADY CAPULET', 'MONTAGUE',
+       'LADY MONTAGUE', 'PRINCE', 'ROMEO', 'PARIS', 'Nurse', 'JULIET',
+       'MERCUTIO', 'First Servant', 'Second Servant', 'Second Capulet',
+       'Chorus', 'FRIAR LAURENCE', 'PETER', 'NURSE', 'LADY  CAPULET',
+       'First Musician', 'Second Musician', 'Musician', 'Third Musician',
+       'BALTHASAR', 'Apothecary', 'FRIAR JOHN', 'PAGE', 'First Watchman',
+       'Second Watchman', 'Third Watchman', 'WARWICK', 'EDWARD',
+       'RICHARD', 'KING HENRY VI', 'CLIFFORD', 'WESTMORELAND', 'EXETER',
+       'JOHN MORTIMER', 'RUTLAND', 'Tutor', 'GEORGE', 'Son', 'Father',
+       'First Keeper', 'Second Keeper', 'LADY GREY', 'Nobleman',
+       'KING LEWIS XI', 'BONA', 'Post', 'SOMERSET', 'Huntsman', 'Mayor',
+       'Soldier', 'First Messenger', 'ARCHIDAMUS', 'CAMILLO', 'POLIXENES',
+       'LEONTES', 'HERMIONE', 'MAMILLIUS', 'First Lady', 'Second Lady',
+       'ANTIGONUS', 'Gaoler', 'PAULINA', 'EMILIA', 'CLEOMENES', 'DION',
+       'Mariner', 'Shepherd', 'Clown', 'Time', 'AUTOLYCUS', 'FLORIZEL',
+       'PERDITA', 'DORCAS', 'MOPSA', 'Shepard', 'First Gentleman',
+       'Second Gentleman', 'Third Gentleman', 'DUKE VINCENTIO', 'ESCALUS',
+       'ANGELO', 'DUKE', 'LUCIO', 'MISTRESS OVERDONE', 'POMPEY',
+       'CLAUDIO', 'Provost', 'FRIAR THOMAS', 'ISABELLA', 'FRANCISCA',
+       'ELBOW', 'FROTH', 'POMPHEY', 'Justice', 'MARIANA', 'ABHORSON',
+       'BARNARDINE', 'FRIAR PETER', 'SLY', 'Hostess', 'First Huntsman',
+       'Second Huntsman', 'Players', 'A Player', 'Third Servant', 'ALL',
+       'LUCENTIO', 'TRANIO', 'BAPTISTA', 'GREMIO', 'HORTENSIO',
+       'KATHARINA', 'HORTENSIA', 'BIANCA', 'BIONDELLO', 'PETRUCHIO',
+       'GRUMIO', 'KATARINA', 'CURTIS', 'NATHANIEL', 'PHILIP', 'JOSEPH',
+       'NICHOLAS', 'ALL SERVING-MEN', 'Pedant', 'Tailor', 'VINCENTIO',
+       'Widow', 'Master', 'Boatswain', 'ALONSO', 'ANTONIO', 'GONZALO',
+       'SEBASTIAN', 'Mariners', 'MIRANDA', 'PROSPERO', 'ARIEL', 'CALIBAN',
+       'FERDINAND', 'ADRIAN', 'FRANCISCO'], dtype=object)
+\end{Verbatim}
+\end{tcolorbox}
+        
+    Some of the names are in all caps, while some are in sentence case. I'll
+adjust so they're all in sentence case.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{112}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{text}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{str}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Through Googling, I found a table of all characters in all Shakepeare
+plays, along with the number of lines spoken by that character and the
+play they appear in. When I tried to scrape the table using the
+\texttt{read\_html} function from \texttt{pandas}, I received a 403
+error code, indicating forbidden access. Fortunately, I was able to take
+a much cruder approach and copy/paste the contents of the table into an
+Excel file, which I've committed to my branch/folder for this homework
+assignment. This dataset comes from playshakespeare.com, specifically
+this page:
+\url{https://www.playshakespeare.com/study/complete-shakespeare-character-list}.
+All credit goes to the original compilers of the data.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{12}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Unsuccessful scraping attempt:}
+\PY{c+c1}{\PYZsh{}characters = pd.read\PYZus{}html(\PYZsq{}https://www.playshakespeare.com/study/complete\PYZhy{}shakespeare\PYZhy{}character\PYZhy{}list\PYZsq{})}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{13}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{characters} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{shakespeare\PYZus{}characters.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{14}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{characters}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{l+m+mi}{10}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{14}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+                                   cter Lines                       Play
+0                King of France (KING.)   373  All's Well That Ends Well
+1              Duke of Florence (DUKE.)    19  All's Well That Ends Well
+2  Bertram, Count of Roussillion (BER.)   240  All's Well That Ends Well
+3                          Lafew (LAF.)   146  All's Well That Ends Well
+4                       Parolles (PAR.)   184  All's Well That Ends Well
+5                       Rinaldo (STEW.)    23  All's Well That Ends Well
+6                        Lavatch (CLO.)    74  All's Well That Ends Well
+7               Countess's Page (PAGE.)     1  All's Well That Ends Well
+8                     Gentleman (GENT.)    22  All's Well That Ends Well
+9      Countess of Roussillion (COUNT.)   220  All's Well That Ends Well
+\end{Verbatim}
+\end{tcolorbox}
+        
+    I need to remove the notations in parentheses in order to properly join
+my tables, so I'll use a string method.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{15}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{characters}\PY{p}{[}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{cter\PYZus{}clean}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{unneeded}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{]} \PY{o}{=} \PY{n}{characters}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{cter}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{str}\PY{o}{.}\PY{n}{split}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{ }\PY{l+s+s1}{\PYZbs{}}\PY{l+s+s1}{(}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{expand} \PY{o}{=} \PY{k+kc}{True}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{16}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{characters}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{l+m+mi}{5}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{16}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+                                   cter Lines                       Play  \textbackslash{}
+0                King of France (KING.)   373  All's Well That Ends Well
+1              Duke of Florence (DUKE.)    19  All's Well That Ends Well
+2  Bertram, Count of Roussillion (BER.)   240  All's Well That Ends Well
+3                          Lafew (LAF.)   146  All's Well That Ends Well
+4                       Parolles (PAR.)   184  All's Well That Ends Well
+
+                      cter\_clean unneeded
+0                 King of France   KING.)
+1               Duke of Florence   DUKE.)
+2  Bertram, Count of Roussillion    BER.)
+3                          Lafew    LAF.)
+4                       Parolles    PAR.)
+\end{Verbatim}
+\end{tcolorbox}
+        
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{17}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}Drop unneeded columns}
+\PY{n}{characters} \PY{o}{=} \PY{n}{characters}\PY{p}{[}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{cter\PYZus{}clean}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Lines}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{18}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{merge}\PY{p}{(}\PY{n}{text}\PY{p}{,} \PY{n}{characters}\PY{p}{,} \PY{n}{left\PYZus{}on} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{right\PYZus{}on} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{cter\PYZus{}clean}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{how} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{left}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    This probably achieved a decent amount of matching, but checking the
+head and tail of the data set reveals two problems:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi})}
+\item
+  Some lines are spoken by characters with ambiguous names (``All'' for
+  the ensemble in response to the First Citizen in Richard III), and so
+  have no match in the character data set.
+\item
+  Shakespeare reused some character names across multiple plays. For
+  example, there are characters named Antonio in The Merchant of Venice,
+  Much Ado About Nothing, The Tempest, Twelfth Night, and The Two
+  Gentlemen of Verona, and simply joining on character name is not
+  enough to specify which one of those plays corresponds to that
+  particular Antonio.
+\end{enumerate}
+
+Issue (1) has a fairly straightforward-ish solution which should
+appropriately label many of the NAs. If I assume that these lines are
+not in a random order, and consist of the full (or partial) dialogue of
+each play in the order that dialogue is spoken (i.e.~a line from Romeo
+and Juliet is surrounded by other lines from Romeo and Juliet, and is
+not intermingled with lines from The Taming of the Shrew or Hamlet or
+King Lear), then I can compare the values of each NA line to the closest
+non-NA values preceding and following it, and use those to assign a
+play. For example, line 2, spoken by the ensemble (labeled ``All'') is
+preceded by a line identified as matching a character in Richard III,
+and is followed by a line matching a character in Richard III, and so is
+almost certainly itself a line from Richard III. I can also fill in the
+character name with the value from the `Speaker' column in cases where
+that would be necessary.
+
+(Note: The example above assumes that the initial match of Richard III
+for those lines was accurate. I don't think it was accurate, but I'm
+proceeding as if it was. I'll address this further toward the end of
+this part.)
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{19}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{}One column has, for each row, the next non\PYZhy{}NA value, while the other has the previous non\PYZhy{}NA value.}
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{bfill}\PY{p}{(}\PY{p}{)}
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{next\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{ffill}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{20}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k}{as} \PY{n+nn}{np}
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{==} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{next\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+                             \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+                             \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    To address issue 2 I described above (the ``multiple plays
+-\textgreater{} 1 character name'' problem), I tried the following:
+since the result of the left join ends up duplicating any rows in the
+original text data frame which match more than one play, that means that
+some of the line numbers I generated appear more than once. I can find,
+for each row, the number of times that line number appears in the data
+set, set all the values where count(line number) != 1 as NA, and then do
+the same comparisons as above.
+
+For example, the selection of rows below shows a conversation between
+three characters named Gonzalo, Sebastian, and Antonio:
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{21}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+m+mi}{9972}\PY{p}{:}\PY{l+m+mi}{9983}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{21}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+      Line\_Number    Speaker  \textbackslash{}
+9972         7205  Sebastian
+9973         7205  Sebastian
+9974         7206    Gonzalo
+9975         7207  Sebastian
+9976         7207  Sebastian
+9977         7208    Antonio
+9978         7208    Antonio
+9979         7208    Antonio
+9980         7208    Antonio
+9981         7208    Antonio
+9982         7209    Gonzalo
+
+                                                         Text  \textbackslash{}
+9972
+An it had not fallen flat-long.
+9973
+An it had not fallen flat-long.
+9974  You are gentlemen of brave metal; you would lift\textbackslash{}nthe moon out of her
+sphere, if she would continue\textbackslash{}nin it five weeks without changing.
+9975
+We would so, and then go a bat-fowling.
+9976
+We would so, and then go a bat-fowling.
+9977
+Nay, good my lord, be not angry.
+9978
+Nay, good my lord, be not angry.
+9979
+Nay, good my lord, be not angry.
+9980
+Nay, good my lord, be not angry.
+9981
+Nay, good my lord, be not angry.
+9982                        No, I warrant you; I will not adventure\textbackslash{}nmy
+discretion so weakly. Will you laugh\textbackslash{}nme asleep, for I am very heavy?
+
+     cter\_clean                         Play Lines  \textbackslash{}
+9972  Sebastian                  The Tempest   114
+9973  Sebastian                Twelfth Night    98
+9974    Gonzalo                  The Tempest   135
+9975  Sebastian                  The Tempest   114
+9976  Sebastian                Twelfth Night    98
+9977    Antonio       The Merchant of Venice   189
+9978    Antonio       Much Ado About Nothing    44
+9979    Antonio                  The Tempest   142
+9980    Antonio                Twelfth Night   105
+9981    Antonio  The Two Gentlemen of Verona    35
+9982    Gonzalo                  The Tempest   135
+
+                        prev\_play                    next\_play
+9972                  The Tempest                  The Tempest
+9973                Twelfth Night                Twelfth Night
+9974                  The Tempest                  The Tempest
+9975                  The Tempest                  The Tempest
+9976                Twelfth Night                Twelfth Night
+9977       The Merchant of Venice       The Merchant of Venice
+9978       Much Ado About Nothing       Much Ado About Nothing
+9979                  The Tempest                  The Tempest
+9980                Twelfth Night                Twelfth Night
+9981  The Two Gentlemen of Verona  The Two Gentlemen of Verona
+9982                  The Tempest                  The Tempest
+\end{Verbatim}
+\end{tcolorbox}
+        
+    Sebastian and Antonio each have at least two matches, but Gonzalo only
+matches one play: The Tempest. As it turns out, Sebastian and Antonio
+also have The Tempest as a possible match for their dialogue, and since
+they are talking to a character who only appears in that play, we can
+assume that these lines correspond to The Tempest, and not one of the
+other plays which matched the character names.
+
+To do this, I did\ldots well, you'll see. As a result of the left join
+matching multiple plays to the same line of dialogue, many of the line
+numbers (like 7208 above) appear more than once in the data set.
+
+First, I used the \texttt{value\_counts} function to label each row with
+the number of times that row's line number appears. I then merged the
+line number counts into the text\_play dataframe I've been working with.
+Then I replaced all the count(line number) values not equal to 1 with
+\texttt{np.nan}, and replaced the values equal to 1 with the
+corresponding play (to get the play names for the rows with unique
+matches). I then dropped the \texttt{prev\_play} and \texttt{next\_play}
+columns and re-instantiated them using the column I just constructed
+with the unique line counts.
+
+Basically, for each line of dialogue which matches multiple plays, this
+finds the closest unique play before and after it. The same way that I
+assumed a line where the play was NA but surrounded by lines matching
+characters in Richard III was itself from Richard III, here I assume
+that if the closest unique characters to a multiple-matched are from The
+Tempest, then the correct match from those multiple matches must also be
+The Tempest, even though that speaker's name appears more than once in
+the data set.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{22}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{line\PYZus{}counts} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{value\PYZus{}counts}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{23}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{line\PYZus{}counts} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{line\PYZus{}counts}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{24}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{line\PYZus{}counts} \PY{o}{=} \PY{n}{line\PYZus{}counts}\PY{o}{.}\PY{n}{reset\PYZus{}index}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{rename}\PY{p}{(}\PY{n}{columns} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{line\PYZus{}counts}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,}
+                                                          \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{index}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{25}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{merge}\PY{p}{(}\PY{n}{text\PYZus{}play}\PY{p}{,}
+                     \PY{n}{line\PYZus{}counts}\PY{p}{,}
+                     \PY{n}{left\PYZus{}on} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+                     \PY{n}{right\PYZus{}on} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{how} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{left}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{26}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{linecounts\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{line\PYZus{}counts}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{!=} \PY{l+m+mi}{1}\PY{p}{,}
+                                    \PY{n}{np}\PY{o}{.}\PY{n}{nan}\PY{p}{,}
+                                    \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{27}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{o}{.}\PY{n}{drop}\PY{p}{(}\PY{n}{columns} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{next\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{28}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{linecounts\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{bfill}\PY{p}{(}\PY{p}{)}
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{next\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{linecounts\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{ffill}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Now I create a new column (creatively titled \texttt{Play1}). For a
+given row, if the previous unique non-NA value of the \texttt{Play}
+column equals the next unique non-NA value, then this column equals that
+value. Otherwise, it just equals the \texttt{Play} column. I also fill
+in the missing values in the \texttt{Play} column with the values in the
+\texttt{prev\_play} column, for merging purposes later.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{29}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play1}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{==} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{next\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+                                    \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+                                    \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{30}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{isna}\PY{p}{(}\PY{p}{)}\PY{p}{,}
+                             \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+                             \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Now, for each value of \texttt{Line\_Number}, I subset those rows, then
+create a series containing those rows' values of Play, prev\_play,
+linecounts\_play, next\_play, and Play1 (basically all of the additional
+columns and indices I created to try and fix the metadata). Then I find
+how often each value in that series occurs using value\_count, and then
+drop all the items in the series which occur at the same frequency as
+the modal value (since I assume that the modal play is correct, a VERY
+big assumption). Then I append the rows containing the combinations of
+line number and play title to be dropped to a list (creatively titled
+\texttt{drop\_list1}).
+
+Once the for loop below is finished, I then concatenate the list of line
+number/play combos I want to drop, convert it to a data frame, and then
+performan an anti-join between the text\_play dataframe and that
+dataframe.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{32}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{drop\PYZus{}list1} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+\PY{k}{for} \PY{n}{ii} \PY{o+ow}{in} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{unique}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+    \PY{c+c1}{\PYZsh{}if text\PYZus{}play1[text\PYZus{}play1[\PYZsq{}Line\PYZus{}Number\PYZsq{}]==ii][\PYZsq{}line\PYZus{}counts\PYZsq{}].unique() != 1:}
+    
+    \PY{c+c1}{\PYZsh{}Select rows where line number = ii}
+    \PY{n}{rows} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{p}{[}\PY{n}{text\PYZus{}play}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{==}\PY{n}{ii}\PY{p}{]}
+    
+    \PY{c+c1}{\PYZsh{}Select these 5 columns, and stack them into a single series}
+    \PY{n}{options} \PY{o}{=} \PY{n}{rows}\PY{p}{[}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+                    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{linecounts\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+                    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{prev\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+                    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{next\PYZus{}play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+                    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play1}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{]}\PY{o}{.}\PY{n}{stack}\PY{p}{(}\PY{p}{)}
+    
+    \PY{c+c1}{\PYZsh{}Find the value counts and set them up as a dataframe}
+    \PY{n}{selection} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{options}\PY{o}{.}\PY{n}{value\PYZus{}counts}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{reset\PYZus{}index}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{o}{.}\PY{n}{rename}\PY{p}{(}\PY{n}{columns} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{index}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+                                                                                         \PY{l+m+mi}{0}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{count}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{)}
+    \PY{c+c1}{\PYZsh{}If there is more than 1 pair of line number and play, drop the rows with the max frequency}
+    \PY{k}{if} \PY{n+nb}{len}\PY{p}{(}\PY{n}{selection}\PY{p}{)} \PY{o}{\PYZgt{}} \PY{l+m+mi}{1}\PY{p}{:}
+        \PY{n}{to\PYZus{}drop} \PY{o}{=} \PY{n}{selection}\PY{p}{[}\PY{n}{selection}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{count}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{!=}\PY{n}{selection}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{count}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+        \PY{c+c1}{\PYZsh{}Add a column of just the line number for the anti join}
+        \PY{n}{to\PYZus{}drop}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{ii}
+        \PY{c+c1}{\PYZsh{}Append to the drop list}
+        \PY{n}{drop\PYZus{}list1}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{to\PYZus{}drop}\PY{p}{)}
+        \PY{c+c1}{\PYZsh{}to\PYZus{}drop = to\PYZus{}drop[[\PYZsq{}Line\PYZus{}Number\PYZsq{}, \PYZsq{}Play\PYZsq{}]].apply(tuple, axis=1)}
+        \PY{c+c1}{\PYZsh{}text\PYZus{}play1 = text\PYZus{}play1[\PYZti{}text\PYZus{}play1[[\PYZsq{}Line\PYZus{}Number\PYZsq{},\PYZsq{}Play\PYZsq{}]].isin(to\PYZus{}drop)]}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+<ipython-input-32-0a192a9eb097>:21: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row\_indexer,col\_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-
+docs/stable/user\_guide/indexing.html\#returning-a-view-versus-a-copy
+  to\_drop['Line\_Number'] = ii
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{33}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{drop\PYZus{}list1} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{concat}\PY{p}{(}\PY{n}{drop\PYZus{}list1}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{36}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play1} \PY{o}{=} \PY{n}{text\PYZus{}play}\PY{o}{.}\PY{n}{merge}\PY{p}{(}\PY{n}{drop\PYZus{}list1}\PY{p}{,} \PY{n}{on} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{how} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{left}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{indicator} \PY{o}{=} \PY{k+kc}{True}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{37}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play1} \PY{o}{=} \PY{n}{text\PYZus{}play1}\PY{o}{.}\PY{n}{loc}\PY{p}{[}\PY{n}{text\PYZus{}play1}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}merge}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{==} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{left\PYZus{}only}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+    This is the part I don't fully understand. The dataframe I produce at
+the end of part 1 has 7,222 rows, and theoretically, the data frame I
+produce at the end of part 2 should have that many rows as well.
+However, the dataframe \texttt{text\_play1}, which is my final product
+for part 2, only has 6987 rows. Granted, if each row (meaning each chunk
+of text) is a ``document'', then that represents a loss of approximately
+3.2\%. Not great, but I don't think that's a project-ending level of
+loss.
+
+Side note: if you can figure out where in this process I lose those 235
+rows, please let me know!
+
+The last note I have on this particular part is that while this process
+achieves a reasonable degree of matching, I know that not all of the
+matches are accurate. This is due to a mismatch between the speaker
+identifiers in the original data and the identifiers used by
+\url{playshakespeare.com}. This data set might list a character as
+``First Citizen'' and have it correspond to ``First Roman Citizen'' in
+the play Coriolanus, while the character \url{playshakespeare.com}
+identifies as ``First Citizen'' is actually from the play Richard III.
+Looking back on what I did for this part (which was largely improvised),
+I think I tried to apply some of the same assumptions and ideas we
+discussed in class (mainly a super-generalized Markov assumption that
+things near each other are likely to be more similar than things farther
+apart), but didn't end up doing a lot of \emph{text}-based matching.
+
+Given more time, I probably could have achieved a more accurate set of
+matches between text and play using the data available. I tried to use a
+list comprehension method to match character names from the character
+dataset to lines of dialogue, but was unable to get that to work
+(something to do with a list not being hashable).
+
+    \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{part-3}{%
+\subsection{Part 3}\label{part-3}}
+
+Pick one or more of the techniques described in this chapter:
+
+\begin{verbatim}
+keyword frequency
+entity relationships
+markov language model
+bag-of-words, TF-IDF
+semantic embedding
+\end{verbatim}
+
+and make a case for a technique to measure how important or interesting
+a speaker is. The measure does not have to be both important and
+interesting, and you are welcome to come up with another term that
+represents ``useful content'', or tells a story (happiest speaker, worst
+speaker, etc.)
+
+Whatever you choose, you must
+
+\begin{verbatim}
+document how your technique was applied
+describe why you believe the technique is a valid approximation or exploration of how important, interesting, etc., a speaker is.
+list some possible weaknesses of your method, or ways you expect your assumptions could be violated within the text.
+\end{verbatim}
+
+This is mostly about learning to transparently document your decisions,
+and iterate on a method for operationalizing useful analyses on text.
+Your explanations should be understandable; homeworks will be
+peer-reviewed by your fellow students.
+
+    \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+First, I select only a few columns from the data set (I don't need a lot
+of the columns of plays I used and generated in part 2 for this step).
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{51}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play2} \PY{o}{=} \PY{n}{text\PYZus{}play1}\PY{p}{[}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Line\PYZus{}Number}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Text}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+    It looks like there are 125 rows which are missing text. I'm not sure
+why these rows are missing, but there's no way to perform text analysis
+on missing text, so I'll just drop those.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{54}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play2} \PY{o}{=} \PY{n}{text\PYZus{}play2}\PY{o}{.}\PY{n}{dropna}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Next, I concatenate the text so all the dialogue from the same character
+in the same play becomes a single string instead of several strings.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{55}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play2}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{text\PYZus{}concat}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{text\PYZus{}play2}\PY{o}{.}\PY{n}{groupby}\PY{p}{(}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Text}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{transform}\PY{p}{(}\PY{k}{lambda} \PY{n}{x}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{,}\PY{l+s+s1}{\PYZsq{}}\PY{o}{.}\PY{n}{join}\PY{p}{(}\PY{n}{x}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Next, I drop duplicates, so each Speaker-Play pair only appears once in
+the dataset.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{57}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play3} \PY{o}{=} \PY{n}{text\PYZus{}play2}\PY{o}{.}\PY{n}{drop\PYZus{}duplicates}\PY{p}{(}\PY{n}{subset}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    We've discussed its limitations in class, particularly with respect to
+the nature of the tokenizer, but I choose to use scikit-learn to
+implement TF-IDF (term frequency-inverse document frequency) for this
+part. The scikit-learn tokenizer might not be effective for all document
+types or text sources, but for this case, where the corpus consists of
+standard English literature, the scikit-learn tokenizer is perfectly
+adequate.
+
+TF-IDF is a measure of term significance. It is proportional to the
+frequency of a token in a document, and inversely proportional to the
+frequency of the term across all documents. A token like ``the'', which
+is highly prevalent in many texts, would have a low TF-IDF score, even
+though it is common. Conversely, a token like ``TFIDF'', which only
+occurs in a small corpus of documents (namely, those regarding text
+analysis and NLP) but is highly prevalent in those specific documents
+might have a high TFIDF score.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{127}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{feature\PYZus{}extraction}\PY{n+nn}{.}\PY{n+nn}{text} \PY{k+kn}{import} \PY{n}{TfidfVectorizer}\PY{p}{,} \PY{n}{TfidfTransformer}\PY{p}{,} \PY{n}{CountVectorizer}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Now I instantiate a vectorizer, fit it to the series of dialogue
+strings, and then convert it to a data frame.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{157}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{vect} \PY{o}{=} \PY{n}{TfidfVectorizer}\PY{p}{(}\PY{p}{)}
+\PY{n}{tfidf\PYZus{}matrix} \PY{o}{=} \PY{n}{vect}\PY{o}{.}\PY{n}{fit\PYZus{}transform}\PY{p}{(}\PY{n}{text\PYZus{}play3}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{text\PYZus{}concat}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\PY{n}{df} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{tfidf\PYZus{}matrix}\PY{o}{.}\PY{n}{toarray}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{columns} \PY{o}{=} \PY{n}{vect}\PY{o}{.}\PY{n}{get\PYZus{}feature\PYZus{}names}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    I calculate the mean TF-IDF score for each Speaker-Play pair:
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{158}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{df}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{df}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{n}{axis} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Then I add in the speaker and play as identifiers, and select them and
+the means.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{159}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{df\PYZus{}TFIDF} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{concat}\PY{p}{(}\PY{p}{[}\PY{n}{text\PYZus{}play3}\PY{p}{[}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{]}\PY{o}{.}\PY{n}{reset\PYZus{}index}\PY{p}{(}\PY{n}{drop}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}\PY{p}{,} \PY{n}{df}\PY{p}{]}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{161}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{df\PYZus{}TFIDF} \PY{o}{=} \PY{n}{df\PYZus{}TFIDF}\PY{p}{[}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+    Calculating the mean TF-IDF score for each character-play pair will show
+who uses the most unusual or distinctive words in this corpus of
+Shakespeare plays.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{181}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{df\PYZus{}TFIDF}\PY{o}{.}\PY{n}{sort\PYZus{}values}\PY{p}{(}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{ascending} \PY{o}{=} \PY{k+kc}{False}\PY{p}{)}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{181}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+             Speaker               Play  mean\_TFIDF
+301          Leontes  The Winter's Tale    0.001835
+157  King Richard Ii    King Richard II    0.001829
+217            Romeo   Romeo and Juliet    0.001822
+221         Mercutio   Romeo and Juliet    0.001781
+26        Coriolanus         Coriolanus    0.001781
+\end{Verbatim}
+\end{tcolorbox}
+        
+    The character Leontes, from the play The Winter's Tale, has the highest
+TF-IDF score. Granted, this, and the other analyses done in this part,
+are predicated on the idea that the dialogue was appropriately matched
+to a play in part 2 (though we know that this line was spoken by
+Leontes, since the speaker identifiers were included in the original
+data).
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{163}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{df\PYZus{}TFIDF}\PY{p}{[}\PY{n}{df\PYZus{}TFIDF}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{==}\PY{n}{df\PYZus{}TFIDF}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{min}\PY{p}{(}\PY{p}{)}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{163}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+            Speaker                     Play  mean\_TFIDF
+58              All         Double Falsehood    0.000089
+64    Both Tribunes              Richard III    0.000089
+167             All          King Richard II    0.000089
+331  Duke Vincentio        The Winter's Tale    0.000089
+365             All  The Taming of the Shrew    0.000089
+392          Master  The Taming of the Shrew    0.000089
+\end{Verbatim}
+\end{tcolorbox}
+        
+    There is a six-way tie for lowest mean TF-IDF score. Notably, four of
+these speakers are ensembles: the two ``All''s and ``Both Tribunes''.
+This likely reflects the fact that in many Shakespeare plays, the
+ensemble dialogue mainly consists of short exclamations or invocations
+for main characters to deliver monologues.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{168}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{tfidf\PYZus{}plays} \PY{o}{=} \PY{n}{df\PYZus{}TFIDF}\PY{o}{.}\PY{n}{groupby}\PY{p}{(}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{170}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{tfidf\PYZus{}plays}\PY{o}{.}\PY{n}{sort\PYZus{}values}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mean\PYZus{}TFIDF}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{170}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+                         mean\_TFIDF
+Play
+Henry VIII                 0.000280
+Titus Andronicus           0.000316
+Double Falsehood           0.000503
+Timon of Athens            0.000558
+Twelfth Night              0.000626
+Henry VI, Part 2           0.000679
+Coriolanus                 0.000703
+Sir Thomas More            0.000727
+The Taming of the Shrew    0.000740
+Richard III                0.000776
+Henry VI, Part 1           0.000777
+Measure for Measure        0.000851
+Romeo and Juliet           0.000870
+King Richard II            0.000898
+Henry VI, Part 3           0.000912
+The Tempest                0.000928
+The Winter's Tale          0.000929
+Edward III                 0.001009
+Cymbeline                  0.001088
+\end{Verbatim}
+\end{tcolorbox}
+        
+    Based on these results (and again, assuming that dialogue was mostly
+matched to the correct play), Cymbeline, Edward III, and The Winter's
+Tale are among the most distinctive of Shakespeare's plays, while Henry
+VIII, Titus Andronicus, and Double Falsehood are among the least
+distinctive. I tried to identify a pattern based on the chronology of
+the plays
+\url{https://en.wikipedia.org/wiki/Chronology_of_Shakespeare\%27s_plays},
+but none is evident; Cymbeline was one of Shakespeare's last plays, but
+so was Henry VIII.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{172}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{values} \PY{o}{=} \PY{n}{df\PYZus{}TFIDF}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{value\PYZus{}counts}\PY{p}{(}\PY{p}{)}
+\PY{n}{values} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{values}\PY{p}{)}
+\PY{n}{values}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{172}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+                         Play
+Richard III                54
+Romeo and Juliet           44
+Coriolanus                 36
+The Taming of the Shrew    35
+The Winter's Tale          31
+Henry VI, Part 3           30
+King Richard II            29
+Sir Thomas More            27
+Measure for Measure        26
+Henry VI, Part 1           17
+Henry VI, Part 2           15
+The Tempest                14
+Cymbeline                  12
+Timon of Athens            12
+Twelfth Night              11
+Double Falsehood            9
+Titus Andronicus            3
+Henry VIII                  1
+Edward III                  1
+\end{Verbatim}
+\end{tcolorbox}
+        
+    There also does not appear to be a significant relationship between the
+number of characters identified as being part of a particular play and
+the mean TF-IDF score of that play. However, the play Edward III had one
+of the highest mean TF-IDF scores, and only one character from that play
+is identified in this data set.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{173}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play3}\PY{p}{[}\PY{n}{text\PYZus{}play3}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Play}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{==}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Edward III}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{173}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+      Line\_Number        Speaker  \textbackslash{}
+2258         1568  Prince Edward
+
+                                           Text  \textbackslash{}
+2258  No, uncle; but our crosses on the way\textbackslash{}nHave made it tedious, wearisome,
+and heavy\textbackslash{}nI want more uncles here to welcome me.
+
+            Play  \textbackslash{}
+2258  Edward III
+
+                                     text\_concat
+2258  No, uncle; but our crosses on the way\textbackslash{}nHave made it tedious, wearisome,
+and heavy\textbackslash{}nI want more uncles here to welcome me.,God keep me from false
+friends! but they were none.,Methinks a woman of this valiant spirit\textbackslash{}nShould, if
+a coward heard her speak these words,\textbackslash{}nInfuse his breast with magnanimity\textbackslash{}nAnd
+make him, naked, foil a man at arms.\textbackslash{}nI speak not this as doubting any here\textbackslash{}nFor
+did I but suspect a fearful man\textbackslash{}nHe should have leave to go away betimes,\textbackslash{}nLest
+in our need he might infect another\textbackslash{}nAnd make him of like spirit to himself.\textbackslash{}nIf
+any such be here--as God forbid!--\textbackslash{}nLet him depart before we need his help.,And
+take his thanks that yet hath nothing else.,Speak like a subject, proud
+ambitious York!\textbackslash{}nSuppose that I am now my father's mouth;\textbackslash{}nResign thy chair, and
+where I stand kneel thou,\textbackslash{}nWhilst I propose the selfsame words to thee,\textbackslash{}nWhich
+traitor, thou wouldst have me answer to.,Let AEsop fable in a winter's
+night;\textbackslash{}nHis currish riddles sort not with this place.,Nay, take away this
+scolding crookback rather.,I know my duty; you are all undutiful:\textbackslash{}nLascivious
+Edward, and thou perjured George,\textbackslash{}nAnd thou mis-shapen Dick, I tell ye all\textbackslash{}nI am
+your better, traitors as ye are:\textbackslash{}nAnd thou usurp'st my father's right and mine.
+\end{Verbatim}
+\end{tcolorbox}
+        
+    That character is Prince Edward (listed on Wikipedia as Edward the Black
+Prince), the eldest son of King Edward III and the heir apparent to the
+throne until his death in 1376. Just looking at this dialogue, several
+unusual words stand out: magnanimity, valiant, selfsame, currish,
+crookback, lascivious, perjured and usurp'st all make appearances in
+this text. This is likely an excerpt from a dramatic monologue, maybe
+the one where he almost loses in battle to the French. This might be
+going a bit too deep down the Shakespeare rabbit hole, but the Wikipedia
+page for Edward III presents theories and research by Shakespeare
+experts which cast doubt on the idea that he even wrote this play, or at
+least that he was the sole author.
+
+    Having acknowledged this, it is necessary to point out that Prince
+Edward does not rank in the top 100 characters in this data set for
+highest mean TF-IDF score. Across all the plays included, there are 407
+characters; as such, while Prince Edward is in the top 25\%, he is by no
+means an exception with respect to unusual vocabulary. Examining the
+character with the most distinctive dialogue, Leontes, is revealing:
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{182}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{text\PYZus{}play3}\PY{p}{[}\PY{n}{text\PYZus{}play3}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Speaker}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{==}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Leontes}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{182}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+      Line\_Number  Speaker  \textbackslash{}
+5914         4418  Leontes
+
+                                                        Text  \textbackslash{}
+5914  Stay your thanks a while;\textbackslash{}nAnd pay them when you part.
+
+                   Play  \textbackslash{}
+5914  The Winter's Tale
+
+                                     text\_concat
+5914  Stay your thanks a while;\textbackslash{}nAnd pay them when you part.,We are tougher,
+brother,\textbackslash{}nThan you can put us to't.,One seven-night longer.,We'll part the time
+between's then; and in that\textbackslash{}nI'll no gainsaying.,Tongue-tied, our queen?\textbackslash{}nspeak
+you.,Well said, Hermione.,Is he won yet?,At my request he would not.\textbackslash{}nHermione,
+my dearest, thou never spokest\textbackslash{}nTo better purpose.,Never, but once.,Why, that
+was when\textbackslash{}nThree crabbed months had sour'd themselves to death,\textbackslash{}nEre I could make
+thee open thy white hand\textbackslash{}nAnd clap thyself my love: then didst thou utter\textbackslash{}n'I am
+yours for ever.',I' fecks!\textbackslash{}nWhy, that's my bawcock. What, hast\textbackslash{}nsmutch'd thy
+nose?\textbackslash{}nThey say it is a copy out of mine. Come, captain,\textbackslash{}nWe must be neat; not
+neat, but cleanly, captain:\textbackslash{}nAnd yet the steer, the heifer and the calf\textbackslash{}nAre all
+call'd neat.--Still virginalling\textbackslash{}nUpon his palm!--How now, you wanton calf!\textbackslash{}nArt
+thou my calf?,Thou want'st a rough pash and the shoots that I have,\textbackslash{}nTo be full
+like me: yet they say we are\textbackslash{}nAlmost as like as eggs; women say so,\textbackslash{}nThat will
+say anything but were they false\textbackslash{}nAs o'er-dyed blacks, as wind, as waters,
+false\textbackslash{}nAs dice are to be wish'd by one that fixes\textbackslash{}nNo bourn 'twixt his and mine,
+yet were it true\textbackslash{}nTo say this boy were like me. Come, sir page,\textbackslash{}nLook on me with
+your welkin eye: sweet villain!\textbackslash{}nMost dear'st! my collop! Can thy dam?--may't
+be?--\textbackslash{}nAffection! thy intention stabs the centre:\textbackslash{}nThou dost make possible
+things not so held,\textbackslash{}nCommunicatest with dreams;--how can this be?--\textbackslash{}nWith what's
+unreal thou coactive art,\textbackslash{}nAnd fellow'st nothing: then 'tis very credent\textbackslash{}nThou
+mayst co-join with something; and thou dost,\textbackslash{}nAnd that beyond commission, and I
+find it,\textbackslash{}nAnd that to the infection of my brains\textbackslash{}nAnd hardening of my brows.,No,
+in good earnest.\textbackslash{}nHow sometimes nature will betray its folly,\textbackslash{}nIts tenderness,
+and make itself a pastime\textbackslash{}nTo harder bosoms! Looking on the lines\textbackslash{}nOf my boy's
+face, methoughts I did recoil\textbackslash{}nTwenty-three years, and saw myself
+unbreech'd,\textbackslash{}nIn my green velvet coat, my dagger muzzled,\textbackslash{}nLest it should bite
+its master, and so prove,\textbackslash{}nAs ornaments oft do, too dangerous:\textbackslash{}nHow like,
+methought, I then was to this kernel,\textbackslash{}nThis squash, this gentleman. Mine honest
+friend,\textbackslash{}nWill you take eggs for money?,You will! why, happy man be's dole! My
+brother,\textbackslash{}nAre you so fond of your young prince as we\textbackslash{}nDo seem to be of ours?,So
+stands this squire\textbackslash{}nOfficed with me: we two will walk, my lord,\textbackslash{}nAnd leave you
+to your graver steps. Hermione,\textbackslash{}nHow thou lovest us, show in our brother's
+welcome;\textbackslash{}nLet what is dear in Sicily be cheap:\textbackslash{}nNext to thyself and my young
+rover, he's\textbackslash{}nApparent to my heart.,To your own bents dispose you: you'll be
+found,\textbackslash{}nBe you beneath the sky.\textbackslash{}nI am angling now,\textbackslash{}nThough you perceive me not
+how I give line.\textbackslash{}nGo to, go to!\textbackslash{}nHow she holds up the neb, the bill to him!\textbackslash{}nAnd
+arms her with the boldness of a wife\textbackslash{}nTo her allowing husband!\textbackslash{}nGone
+already!\textbackslash{}nInch-thick, knee-deep, o'er head and\textbackslash{}nears a fork'd one!\textbackslash{}nGo, play,
+boy, play: thy mother plays, and I\textbackslash{}nPlay too, but so disgraced a part, whose
+issue\textbackslash{}nWill hiss me to my grave: contempt and clamour\textbackslash{}nWill be my knell. Go,
+play, boy, play.\textbackslash{}nThere have been,\textbackslash{}nOr I am much deceived, cuckolds ere
+now;\textbackslash{}nAnd many a man there is, even at this present,\textbackslash{}nNow while I speak this,
+holds his wife by the arm,\textbackslash{}nThat little thinks she has been sluiced in's
+absence\textbackslash{}nAnd his pond fish'd by his next neighbour, by\textbackslash{}nSir Smile, his
+neighbour: nay, there's comfort in't\textbackslash{}nWhiles other men have gates and those
+gates open'd,\textbackslash{}nAs mine, against their will. Should all despair\textbackslash{}nThat have
+revolted wives, the tenth of mankind\textbackslash{}nWould hang themselves. Physic for't there
+is none;\textbackslash{}nIt is a bawdy planet, that will strike\textbackslash{}nWhere 'tis predominant; and
+'tis powerful, think it,\textbackslash{}nFrom east, west, north and south: be it concluded,\textbackslash{}nNo
+barricado for a belly; know't;\textbackslash{}nIt will let in and out the enemy\textbackslash{}nWith bag and
+baggage: many thousand on's\textbackslash{}nHave the disease, and feel't not. How now, boy!,Why
+that's some comfort. What, Camillo there?,Go play, Mamillius; thou'rt an honest
+man.\textbackslash{}nCamillo, this great sir will yet stay longer.,Didst note it?,Didst
+perceive it?\textbackslash{}nThey're here with me already, whispering, rounding\textbackslash{}n'Sicilia is a
+so-forth:' 'tis far gone,\textbackslash{}nWhen I shall gust it last. How came't, Camillo,\textbackslash{}nThat
+he did stay?,At the queen's be't: 'good' should be pertinent\textbackslash{}nBut, so it is, it
+is not. Was this taken\textbackslash{}nBy any understanding pate but thine?\textbackslash{}nFor thy conceit is
+soaking, will draw in\textbackslash{}nMore than the common blocks: not noted, is't,\textbackslash{}nBut of the
+finer natures? by some severals\textbackslash{}nOf head-piece extraordinary? lower
+messes\textbackslash{}nPerchance are to this business purblind? say.,Ha!,Ay, but
+why?,Satisfy!\textbackslash{}nThe entreaties of your mistress! satisfy!\textbackslash{}nLet that suffice. I
+have trusted thee, Camillo,\textbackslash{}nWith all the nearest things to my heart, as
+well\textbackslash{}nMy chamber-councils, wherein, priest-like, thou\textbackslash{}nHast cleansed my bosom, I
+from thee departed\textbackslash{}nThy penitent reform'd: but we have been\textbackslash{}nDeceived in thy
+integrity, deceived\textbackslash{}nIn that which seems so.,To bide upon't, thou art not
+honest, or,\textbackslash{}nIf thou inclinest that way, thou art a coward,\textbackslash{}nWhich hoxes honesty
+behind, restraining\textbackslash{}nFrom course required; or else thou must be counted\textbackslash{}nA
+servant grafted in my serious trust\textbackslash{}nAnd therein negligent; or else a fool\textbackslash{}nThat
+seest a game play'd home, the rich stake drawn,\textbackslash{}nAnd takest it all for jest.,Ha'
+not you seen, Camillo,--\textbackslash{}nBut that's past doubt, you have, or your eye-glass\textbackslash{}nIs
+thicker than a cuckold's horn,--or heard,--\textbackslash{}nFor to a vision so apparent
+rumour\textbackslash{}nCannot be mute,--or thought,--for cogitation\textbackslash{}nResides not in that man
+that does not think,--\textbackslash{}nMy wife is slippery? If thou wilt confess,\textbackslash{}nOr else be
+impudently negative,\textbackslash{}nTo have nor eyes nor ears nor thought, then say\textbackslash{}nMy wife's
+a hobby-horse, deserves a name\textbackslash{}nAs rank as any flax-wench that puts to\textbackslash{}nBefore
+her troth-plight: say't and justify't.,Is whispering nothing?\textbackslash{}nIs leaning cheek
+to cheek? is meeting noses?\textbackslash{}nKissing with inside lip? stopping the career\textbackslash{}nOf
+laughing with a sigh?--a note infallible\textbackslash{}nOf breaking honesty--horsing foot on
+foot?\textbackslash{}nSkulking in corners? wishing clocks more swift?\textbackslash{}nHours, minutes? noon,
+midnight? and all eyes\textbackslash{}nBlind with the pin and web but theirs, theirs
+only,\textbackslash{}nThat would unseen be wicked? is this nothing?\textbackslash{}nWhy, then the world and
+all that's in't is nothing;\textbackslash{}nThe covering sky is nothing; Bohemia nothing;\textbackslash{}nMy
+wife is nothing; nor nothing have these nothings,\textbackslash{}nIf this be nothing.,Say it
+be, 'tis true.,It is; you lie, you lie:\textbackslash{}nI say thou liest, Camillo, and I hate
+thee,\textbackslash{}nPronounce thee a gross lout, a mindless slave,\textbackslash{}nOr else a hovering
+temporizer, that\textbackslash{}nCanst with thine eyes at once see good and evil,\textbackslash{}nInclining to
+them both: were my wife's liver\textbackslash{}nInfected as her life, she would not live\textbackslash{}nThe
+running of one glass.,Why, he that wears her like a medal, hanging\textbackslash{}nAbout his
+neck, Bohemia: who, if I\textbackslash{}nHad servants true about me, that bare eyes\textbackslash{}nTo see
+alike mine honour as their profits,\textbackslash{}nTheir own particular thrifts, they would do
+that\textbackslash{}nWhich should undo more doing: ay, and thou,\textbackslash{}nHis cupbearer,--whom I from
+meaner form\textbackslash{}nHave benched and reared to worship, who mayst see\textbackslash{}nPlainly as
+heaven sees earth and earth sees heaven,\textbackslash{}nHow I am galled,--mightst bespice a
+cup,\textbackslash{}nTo give mine enemy a lasting wink;\textbackslash{}nWhich draught to me were cordial.,Make
+that thy question, and go rot!\textbackslash{}nDost think I am so muddy, so unsettled,\textbackslash{}nTo
+appoint myself in this vexation, sully\textbackslash{}nThe purity and whiteness of my
+sheets,\textbackslash{}nWhich to preserve is sleep, which being spotted\textbackslash{}nIs goads, thorns,
+nettles, tails of wasps,\textbackslash{}nGive scandal to the blood o' the prince my son,\textbackslash{}nWho I
+do think is mine and love as mine,\textbackslash{}nWithout ripe moving to't? Would I do
+this?\textbackslash{}nCould man so blench?,Thou dost advise me\textbackslash{}nEven so as I mine own course
+have set down:\textbackslash{}nI'll give no blemish to her honour, none.,This is all:\textbackslash{}nDo't and
+thou hast the one half of my heart;\textbackslash{}nDo't not, thou split'st thine own.,I will
+seem friendly, as thou hast advised me.,Was he met there? his train? Camillo
+with him?,How blest am I\textbackslash{}nIn my just censure, in my true opinion!\textbackslash{}nAlack, for
+lesser knowledge! how accursed\textbackslash{}nIn being so blest! There may be in the cup\textbackslash{}nA
+spider steep'd, and one may drink, depart,\textbackslash{}nAnd yet partake no venom, for his
+knowledge\textbackslash{}nIs not infected: but if one present\textbackslash{}nThe abhorr'd ingredient to his
+eye, make known\textbackslash{}nHow he hath drunk, he cracks his gorge, his sides,\textbackslash{}nWith
+violent hefts. I have drunk,\textbackslash{}nand seen the spider.\textbackslash{}nCamillo was his help in
+this, his pander:\textbackslash{}nThere is a plot against my life, my crown;\textbackslash{}nAll's true that
+is mistrusted: that false villain\textbackslash{}nWhom I employ'd was pre-employ'd by him:\textbackslash{}nHe
+has discover'd my design, and I\textbackslash{}nRemain a pinch'd thing; yea, a very trick\textbackslash{}nFor
+them to play at will. How came the posterns\textbackslash{}nSo easily open?,I know't too
+well.\textbackslash{}nGive me the boy: I am glad you did not nurse him:\textbackslash{}nThough he does bear
+some signs of me, yet you\textbackslash{}nHave too much blood in him.,Bear the boy hence; he
+shall not come about her;\textbackslash{}nAway with him! and let her sport herself\textbackslash{}nWith that
+she's big with; for 'tis Polixenes\textbackslash{}nHas made thee swell thus.,You, my
+lords,\textbackslash{}nLook on her, mark her well; be but about\textbackslash{}nTo say 'she is a goodly lady,'
+and\textbackslash{}nThe justice of your bearts will thereto add\textbackslash{}n'Tis pity she's not honest,
+honourable:'\textbackslash{}nPraise her but for this her without-door form,\textbackslash{}nWhich on my faith
+deserves high speech, and straight\textbackslash{}nThe shrug, the hum or ha, these petty
+brands\textbackslash{}nThat calumny doth use--O, I am out--\textbackslash{}nThat mercy does, for calumny will
+sear\textbackslash{}nVirtue itself: these shrugs, these hums and ha's,\textbackslash{}nWhen you have said
+'she's goodly,' come between\textbackslash{}nEre you can say 'she's honest:' but be 't
+known,\textbackslash{}nFrom him that has most cause to grieve it should be,\textbackslash{}nShe's an
+adulteress.,You have mistook, my lady,\textbackslash{}nPolixenes for Leontes: O thou
+thing!\textbackslash{}nWhich I'll not call a creature of thy place,\textbackslash{}nLest barbarism, making me
+the precedent,\textbackslash{}nShould a like language use to all degrees\textbackslash{}nAnd mannerly
+distinguishment leave out\textbackslash{}nBetwixt the prince and beggar: I have said\textbackslash{}nShe's an
+adulteress; I have said with whom:\textbackslash{}nMore, she's a traitor and Camillo is\textbackslash{}nA
+federary with her, and one that knows\textbackslash{}nWhat she should shame to know
+herself\textbackslash{}nBut with her most vile principal, that she's\textbackslash{}nA bed-swerver, even as
+bad as those\textbackslash{}nThat vulgars give bold'st titles, ay, and privy\textbackslash{}nTo this their
+late escape.,No; if I mistake\textbackslash{}nIn those foundations which I build upon,\textbackslash{}nThe
+centre is not big enough to bear\textbackslash{}nA school-boy's top. Away with her! to
+prison!\textbackslash{}nHe who shall speak for her is afar off guilty\textbackslash{}nBut that he
+speaks.,Shall I be heard?,Go, do our bidding; hence!,Hold your peaces.,Cease; no
+more.\textbackslash{}nYou smell this business with a sense as cold\textbackslash{}nAs is a dead man's nose:
+but I do see't and feel't\textbackslash{}nAs you feel doing thus; and see withal\textbackslash{}nThe
+instruments that feel.,What! lack I credit?,Why, what need we\textbackslash{}nCommune with you
+of this, but rather follow\textbackslash{}nOur forceful instigation? Our prerogative\textbackslash{}nCalls not
+your counsels, but our natural goodness\textbackslash{}nImparts this; which if you, or
+stupefied\textbackslash{}nOr seeming so in skill, cannot or will not\textbackslash{}nRelish a truth like us,
+inform yourselves\textbackslash{}nWe need no more of your advice: the matter,\textbackslash{}nThe loss, the
+gain, the ordering on't, is all\textbackslash{}nProperly ours.,How could that be?\textbackslash{}nEither thou
+art most ignorant by age,\textbackslash{}nOr thou wert born a fool. Camillo's flight,\textbackslash{}nAdded to
+their familiarity,\textbackslash{}nWhich was as gross as ever touch'd conjecture,\textbackslash{}nThat lack'd
+sight only, nought for approbation\textbackslash{}nBut only seeing, all other
+circumstances\textbackslash{}nMade up to the deed, doth push on this proceeding:\textbackslash{}nYet, for a
+greater confirmation,\textbackslash{}nFor in an act of this importance 'twere\textbackslash{}nMost piteous to
+be wild, I have dispatch'd in post\textbackslash{}nTo sacred Delphos, to Apollo's
+temple,\textbackslash{}nCleomenes and Dion, whom you know\textbackslash{}nOf stuff'd sufficiency: now from the
+oracle\textbackslash{}nThey will bring all; whose spiritual counsel had,\textbackslash{}nShall stop or spur
+me. Have I done well?,Though I am satisfied and need no more\textbackslash{}nThan what I know,
+yet shall the oracle\textbackslash{}nGive rest to the minds of others, such as he\textbackslash{}nWhose
+ignorant credulity will not\textbackslash{}nCome up to the truth. So have we thought it
+good\textbackslash{}nFrom our free person she should be confined,\textbackslash{}nLest that the treachery of
+the two fled hence\textbackslash{}nBe left her to perform. Come, follow us;\textbackslash{}nWe are to speak in
+public; for this business\textbackslash{}nWill raise us all.,Nor night nor day no rest: it is
+but weakness\textbackslash{}nTo bear the matter thus; mere weakness. If\textbackslash{}nThe cause were not in
+being,--part o' the cause,\textbackslash{}nShe the adulteress; for the harlot king\textbackslash{}nIs quite
+beyond mine arm, out of the blank\textbackslash{}nAnd level of my brain, plot-proof; but she\textbackslash{}nI
+can hook to me: say that she were gone,\textbackslash{}nGiven to the fire, a moiety of my
+rest\textbackslash{}nMight come to me again. Who's there?,How does the boy?,To see his
+nobleness!\textbackslash{}nConceiving the dishonour of his mother,\textbackslash{}nHe straight declined,
+droop'd, took it deeply,\textbackslash{}nFasten'd and fix'd the shame on't in himself,\textbackslash{}nThrew
+off his spirit, his appetite, his sleep,\textbackslash{}nAnd downright languish'd. Leave me
+solely: go,\textbackslash{}nSee how he fares.\textbackslash{}nFie, fie! no thought of him:\textbackslash{}nThe thought of my
+revenges that way\textbackslash{}nRecoil upon me: in himself too mighty,\textbackslash{}nAnd in his parties,
+his alliance; let him be\textbackslash{}nUntil a time may serve: for present vengeance,\textbackslash{}nTake
+it on her. Camillo and Polixenes\textbackslash{}nLaugh at me, make their pastime at my
+sorrow:\textbackslash{}nThey should not laugh if I could reach them, nor\textbackslash{}nShall she within my
+power.,What noise there, ho?,How!\textbackslash{}nAway with that audacious lady! Antigonus,\textbackslash{}nI
+charged thee that she should not come about me:\textbackslash{}nI knew she would.,What, canst
+not rule her?,Good queen!,Force her hence.,Out!\textbackslash{}nA mankind witch! Hence with
+her, out o' door:\textbackslash{}nA most intelligencing bawd!,Traitors!\textbackslash{}nWill you not push her
+out? Give her the bastard.\textbackslash{}nThou dotard! thou art woman-tired, unroosted\textbackslash{}nBy thy
+dame Partlet here. Take up the bastard;\textbackslash{}nTake't up, I say; give't to thy
+crone.,He dreads his wife.,A nest of traitors!,A callat\textbackslash{}nOf boundless tongue,
+who late hath beat her husband\textbackslash{}nAnd now baits me! This brat is none of mine;\textbackslash{}nIt
+is the issue of Polixenes:\textbackslash{}nHence with it, and together with the dam\textbackslash{}nCommit
+them to the fire!,A gross hag\textbackslash{}nAnd, lozel, thou art worthy to be hang'd,\textbackslash{}nThat
+wilt not stay her tongue.,Once more, take her hence.,I'll ha' thee burnt.,On
+your allegiance,\textbackslash{}nOut of the chamber with her! Were I a tyrant,\textbackslash{}nWhere were her
+life? she durst not call me so,\textbackslash{}nIf she did know me one. Away with her!,Thou,
+traitor, hast set on thy wife to this.\textbackslash{}nMy child? away with't! Even thou, that
+hast\textbackslash{}nA heart so tender o'er it, take it hence\textbackslash{}nAnd see it instantly consumed
+with fire;\textbackslash{}nEven thou and none but thou. Take it up straight:\textbackslash{}nWithin this hour
+bring me word 'tis done,\textbackslash{}nAnd by good testimony, or I'll seize thy life,\textbackslash{}nWith
+what thou else call'st thine. If thou refuse\textbackslash{}nAnd wilt encounter with my wrath,
+say so;\textbackslash{}nThe bastard brains with these my proper hands\textbackslash{}nShall I dash out. Go,
+take it to the fire;\textbackslash{}nFor thou set'st on thy wife.,You're liars all.,I am a
+feather for each wind that blows:\textbackslash{}nShall I live on to see this bastard
+kneel\textbackslash{}nAnd call me father? better burn it now\textbackslash{}nThan curse it then. But be it;
+let it live.\textbackslash{}nIt shall not neither. You, sir, come you hither;\textbackslash{}nYou that have
+been so tenderly officious\textbackslash{}nWith Lady Margery, your midwife there,\textbackslash{}nTo save this
+bastard's life,--for 'tis a bastard,\textbackslash{}nSo sure as this beard's grey,\textbackslash{}n--what will
+you adventure\textbackslash{}nTo save this brat's life?,It shall be possible. Swear by this
+sword\textbackslash{}nThou wilt perform my bidding.,Mark and perform it, see'st thou! for the
+fail\textbackslash{}nOf any point in't shall not only be\textbackslash{}nDeath to thyself but to thy lewd-
+tongued wife,\textbackslash{}nWhom for this time we pardon. We enjoin thee,\textbackslash{}nAs thou art liege-
+man to us, that thou carry\textbackslash{}nThis female bastard hence and that thou bear it\textbackslash{}nTo
+some remote and desert place quite out\textbackslash{}nOf our dominions, and that there thou
+leave it,\textbackslash{}nWithout more mercy, to its own protection\textbackslash{}nAnd favour of the climate.
+As by strange fortune\textbackslash{}nIt came to us, I do in justice charge thee,\textbackslash{}nOn thy
+soul's peril and thy body's torture,\textbackslash{}nThat thou commend it strangely to some
+place\textbackslash{}nWhere chance may nurse or end it. Take it up.,No, I'll not
+rear\textbackslash{}nAnother's issue.,Twenty-three days\textbackslash{}nThey have been absent: 'tis good
+speed; foretells\textbackslash{}nThe great Apollo suddenly will have\textbackslash{}nThe truth of this appear.
+Prepare you, lords;\textbackslash{}nSummon a session, that we may arraign\textbackslash{}nOur most disloyal
+lady, for, as she hath\textbackslash{}nBeen publicly accused, so shall she have\textbackslash{}nA just and
+open trial. While she lives\textbackslash{}nMy heart will be a burthen to me. Leave me,\textbackslash{}nAnd
+think upon my bidding.,This sessions, to our great grief we pronounce,\textbackslash{}nEven
+pushes 'gainst our heart: the party tried\textbackslash{}nThe daughter of a king, our wife, and
+one\textbackslash{}nOf us too much beloved. Let us be clear'd\textbackslash{}nOf being tyrannous, since we so
+openly\textbackslash{}nProceed in justice, which shall have due course,\textbackslash{}nEven to the guilt or
+the purgation.\textbackslash{}nProduce the prisoner.,Read the indictment.,I ne'er heard
+yet\textbackslash{}nThat any of these bolder vices wanted\textbackslash{}nLess impudence to gainsay what they
+did\textbackslash{}nThan to perform it first.,You will not own it.,You knew of his departure,
+as you know\textbackslash{}nWhat you have underta'en to do in's absence.,Your actions are my
+dreams;\textbackslash{}nYou had a bastard by Polixenes,\textbackslash{}nAnd I but dream'd it. As you were past
+all shame,--\textbackslash{}nThose of your fact are so--so past all truth:\textbackslash{}nWhich to deny
+concerns more than avails; for as\textbackslash{}nThy brat hath been cast out, like to
+itself,\textbackslash{}nNo father owning it,--which is, indeed,\textbackslash{}nMore criminal in thee than it,
+--so thou\textbackslash{}nShalt feel our justice, in whose easiest passage\textbackslash{}nLook for no less
+than death.,Break up the seals and read.,Hast thou read truth?,There is no truth
+at all i' the oracle:\textbackslash{}nThe sessions shall proceed: this is mere falsehood.,What
+is the business?,How! gone!,Apollo's angry; and the heavens themselves\textbackslash{}nDo
+strike at my injustice.\textbackslash{}nHow now there!,Take her hence:\textbackslash{}nHer heart is but
+o'ercharged; she will recover:\textbackslash{}nI have too much believed mine own
+suspicion:\textbackslash{}nBeseech you, tenderly apply to her\textbackslash{}nSome remedies for life.\textbackslash{}nApollo,
+pardon\textbackslash{}nMy great profaneness 'gainst thine oracle!\textbackslash{}nI'll reconcile me to
+Polixenes,\textbackslash{}nNew woo my queen, recall the good Camillo,\textbackslash{}nWhom I proclaim a man of
+truth, of mercy;\textbackslash{}nFor, being transported by my jealousies\textbackslash{}nTo bloody thoughts
+and to revenge, I chose\textbackslash{}nCamillo for the minister to poison\textbackslash{}nMy friend
+Polixenes: which had been done,\textbackslash{}nBut that the good mind of Camillo tardied\textbackslash{}nMy
+swift command, though I with death and with\textbackslash{}nReward did threaten and encourage
+him,\textbackslash{}nNot doing 't and being done: he, most humane\textbackslash{}nAnd fill'd with honour, to
+my kingly guest\textbackslash{}nUnclasp'd my practise, quit his fortunes here,\textbackslash{}nWhich you knew
+great, and to the hazard\textbackslash{}nOf all encertainties himself commended,\textbackslash{}nNo richer
+than his honour: how he glisters\textbackslash{}nThorough my rust! and how his pity\textbackslash{}nDoes my
+deeds make the blacker!,Go on, go on\textbackslash{}nThou canst not speak too much; I have
+deserved\textbackslash{}nAll tongues to talk their bitterest.,Thou didst speak but well\textbackslash{}nWhen
+most the truth; which I receive much better\textbackslash{}nThan to be pitied of thee. Prithee,
+bring me\textbackslash{}nTo the dead bodies of my queen and son:\textbackslash{}nOne grave shall be for both:
+upon them shall\textbackslash{}nThe causes of their death appear, unto\textbackslash{}nOur shame perpetual.
+Once a day I'll visit\textbackslash{}nThe chapel where they lie, and tears shed there\textbackslash{}nShall be
+my recreation: so long as nature\textbackslash{}nWill bear up with this exercise, so long\textbackslash{}nI
+daily vow to use it. Come and lead me\textbackslash{}nUnto these sorrows.,Whilst I
+remember\textbackslash{}nHer and her virtues, I cannot forget\textbackslash{}nMy blemishes in them, and so
+still think of\textbackslash{}nThe wrong I did myself; which was so much,\textbackslash{}nThat heirless it
+hath made my kingdom and\textbackslash{}nDestroy'd the sweet'st companion that e'er man\textbackslash{}nBred
+his hopes out of.,I think so. Kill'd!\textbackslash{}nShe I kill'd! I did so: but thou strikest
+me\textbackslash{}nSorely, to say I did; it is as bitter\textbackslash{}nUpon thy tongue as in my thought:
+now, good now,\textbackslash{}nSay so but seldom.,Good Paulina,\textbackslash{}nWho hast the memory of
+Hermione,\textbackslash{}nI know, in honour, O, that ever I\textbackslash{}nHad squared me to thy counsel!
+then, even now,\textbackslash{}nI might have look'd upon my queen's full eyes,\textbackslash{}nHave taken
+treasure from her lips--,Thou speak'st truth.\textbackslash{}nNo more such wives; therefore, no
+wife: one worse,\textbackslash{}nAnd better used, would make her sainted spirit\textbackslash{}nAgain possess
+her corpse, and on this stage,\textbackslash{}nWhere we're offenders now, appear soul-
+vex'd,\textbackslash{}nAnd begin, 'Why to me?',She had; and would incense me\textbackslash{}nTo murder her I
+married.,Stars, stars,\textbackslash{}nAnd all eyes else dead coals! Fear thou no wife;\textbackslash{}nI'll
+have no wife, Paulina.,Never, Paulina; so be blest my spirit!,My true
+Paulina,\textbackslash{}nWe shall not marry till thou bid'st us.,What with him? he comes
+not\textbackslash{}nLike to his father's greatness: his approach,\textbackslash{}nSo out of circumstance and
+sudden, tells us\textbackslash{}n'Tis not a visitation framed, but forced\textbackslash{}nBy need and
+accident. What train?,His princess, say you, with him?,Go, Cleomenes;\textbackslash{}nYourself,
+assisted with your honour'd friends,\textbackslash{}nBring them to our embracement. Still, 'tis
+strange\textbackslash{}nHe thus should steal upon us.,Prithee, no more; cease; thou know'st\textbackslash{}nHe
+dies to me again when talk'd of: sure,\textbackslash{}nWhen I shall see this gentleman, thy
+speeches\textbackslash{}nWill bring me to consider that which may\textbackslash{}nUnfurnish me of reason. They
+are come.\textbackslash{}nYour mother was most true to wedlock, prince;\textbackslash{}nFor she did print your
+royal father off,\textbackslash{}nConceiving you: were I but twenty-one,\textbackslash{}nYour father's image
+is so hit in you,\textbackslash{}nHis very air, that I should call you brother,\textbackslash{}nAs I did him,
+and speak of something wildly\textbackslash{}nBy us perform'd before. Most dearly welcome!\textbackslash{}nAnd
+your fair princess,--goddess!--O, alas!\textbackslash{}nI lost a couple, that 'twixt heaven and
+earth\textbackslash{}nMight thus have stood begetting wonder as\textbackslash{}nYou, gracious couple, do: and
+then I lost--\textbackslash{}nAll mine own folly--the society,\textbackslash{}nAmity too, of your brave
+father, whom,\textbackslash{}nThough bearing misery, I desire my life\textbackslash{}nOnce more to look on
+him.,O my brother,\textbackslash{}nGood gentleman! the wrongs I have done thee stir\textbackslash{}nAfresh
+within me, and these thy offices,\textbackslash{}nSo rarely kind, are as interpreters\textbackslash{}nOf my
+behind-hand slackness. Welcome hither,\textbackslash{}nAs is the spring to the earth. And hath
+he too\textbackslash{}nExposed this paragon to the fearful usage,\textbackslash{}nAt least ungentle, of the
+dreadful Neptune,\textbackslash{}nTo greet a man not worth her pains, much less\textbackslash{}nThe adventure
+of her person?,Where the warlike Smalus,\textbackslash{}nThat noble honour'd lord, is fear'd
+and loved?,The blessed gods\textbackslash{}nPurge all infection from our air whilst you\textbackslash{}nDo
+climate here! You have a holy father,\textbackslash{}nA graceful gentleman; against whose
+person,\textbackslash{}nSo sacred as it is, I have done sin:\textbackslash{}nFor which the heavens, taking
+angry note,\textbackslash{}nHave left me issueless; and your father's blest,\textbackslash{}nAs he from heaven
+merits it, with you\textbackslash{}nWorthy his goodness. What might I have been,\textbackslash{}nMight I a son
+and daughter now have look'd on,\textbackslash{}nSuch goodly things as you!,Where's Bohemia?
+speak.,Who? Camillo?,You are married?,My lord,\textbackslash{}nIs this the daughter of a
+king?,That 'once' I see by your good father's speed\textbackslash{}nWill come on very slowly. I
+am sorry,\textbackslash{}nMost sorry, you have broken from his liking\textbackslash{}nWhere you were tied in
+duty, and as sorry\textbackslash{}nYour choice is not so rich in worth as beauty,\textbackslash{}nThat you
+might well enjoy her.,Would he do so, I'ld beg your precious mistress,\textbackslash{}nWhich he
+counts but a trifle.,I thought of her,\textbackslash{}nEven in these looks I made.\textbackslash{}nBut your
+petition\textbackslash{}nIs yet unanswer'd. I will to your father:\textbackslash{}nYour honour not o'erthrown
+by your desires,\textbackslash{}nI am friend to them and you: upon which errand\textbackslash{}nI now go
+toward him; therefore follow me\textbackslash{}nAnd mark what way I make: come, good my lord.,O
+grave and good Paulina, the great comfort\textbackslash{}nThat I have had of thee!,O
+Paulina,\textbackslash{}nWe honour you with trouble: but we came\textbackslash{}nTo see the statue of our
+queen: your gallery\textbackslash{}nHave we pass'd through, not without much content\textbackslash{}nIn many
+singularities; but we saw not\textbackslash{}nThat which my daughter came to look upon,\textbackslash{}nThe
+statue of her mother.,Her natural posture!\textbackslash{}nChide me, dear stone, that I may say
+indeed\textbackslash{}nThou art Hermione; or rather, thou art she\textbackslash{}nIn thy not chiding, for she
+was as tender\textbackslash{}nAs infancy and grace. But yet, Paulina,\textbackslash{}nHermione was not so much
+wrinkled, nothing\textbackslash{}nSo aged as this seems.,As now she might have done,\textbackslash{}nSo much
+to my good comfort, as it is\textbackslash{}nNow piercing to my soul. O, thus she stood,\textbackslash{}nEven
+with such life of majesty, warm life,\textbackslash{}nAs now it coldly stands, when first I
+woo'd her!\textbackslash{}nI am ashamed: does not the stone rebuke me\textbackslash{}nFor being more stone
+than it? O royal piece,\textbackslash{}nThere's magic in thy majesty, which has\textbackslash{}nMy evils
+conjured to remembrance and\textbackslash{}nFrom thy admiring daughter took the
+spirits,\textbackslash{}nStanding like stone with thee.,Do not draw the curtain.,Let be, let
+be.\textbackslash{}nWould I were dead, but that, methinks, already--\textbackslash{}nWhat was he that did make
+it? See, my lord,\textbackslash{}nWould you not deem it breathed? and that those veins\textbackslash{}nDid
+verily bear blood?,The fixture of her eye has motion in't,\textbackslash{}nAs we are mock'd
+with art.,O sweet Paulina,\textbackslash{}nMake me to think so twenty years together!\textbackslash{}nNo
+settled senses of the world can match\textbackslash{}nThe pleasure of that madness. Let 't
+alone.,Do, Paulina;\textbackslash{}nFor this affliction has a taste as sweet\textbackslash{}nAs any cordial
+comfort. Still, methinks,\textbackslash{}nThere is an air comes from her: what fine
+chisel\textbackslash{}nCould ever yet cut breath? Let no man mock me,\textbackslash{}nFor I will kiss her.,No,
+not these twenty years.,What you can make her do,\textbackslash{}nI am content to look on: what
+to speak,\textbackslash{}nI am content to hear; for 'tis as easy\textbackslash{}nTo make her speak as
+move.,Proceed:\textbackslash{}nNo foot shall stir.,O, she's warm!\textbackslash{}nIf this be magic, let it be
+an art\textbackslash{}nLawful as eating.,O, peace, Paulina!\textbackslash{}nThou shouldst a husband take by my
+consent,\textbackslash{}nAs I by thine a wife: this is a match,\textbackslash{}nAnd made between's by vows.
+Thou hast found mine;\textbackslash{}nBut how, is to be question'd; for I saw her,\textbackslash{}nAs I
+thought, dead, and have in vain said many\textbackslash{}nA prayer upon her grave. I'll not
+seek far--\textbackslash{}nFor him, I partly know his mind--to find thee\textbackslash{}nAn honourable
+husband. Come, Camillo,\textbackslash{}nAnd take her by the hand, whose worth and honesty\textbackslash{}nIs
+richly noted and here justified\textbackslash{}nBy us, a pair of kings. Let's from this
+place.\textbackslash{}nWhat! look upon my brother: both your pardons,\textbackslash{}nThat e'er I put between
+your holy looks\textbackslash{}nMy ill suspicion. This is your son-in-law,\textbackslash{}nAnd son unto the
+king, who, heavens directing,\textbackslash{}nIs troth-plight to your daughter. Good
+Paulina,\textbackslash{}nLead us from hence, where we may leisurely\textbackslash{}nEach one demand an answer
+to his part\textbackslash{}nPerform'd in this wide gap of time since first\textbackslash{}nWe were dissever'd:
+hastily lead away.
+\end{Verbatim}
+\end{tcolorbox}
+        
+    The length of dialogue attributed to this character is significantly
+longer than that attributed to Prince Edward. This reveals a potential
+weakness of TF-IDF: difficulty handling different document sizes.
+Leontes might not have a more interesting or idiosyncratic vocabulary
+than Prince Edward; he might just talk more. Future steps for this
+analysis could weight TF-IDF scores by document size, or could select a
+random sample of tokens from each document to use to calculate scores.
+
+That being said, I do think that TF-IDF is useful as a means of
+evaluating terms and documents in relation to each other. This metric
+makes it easy to identify the most distinctive terms and tokens in a
+document, and also helps identify documents which could be outliers in
+the corpus. In this case, I found that one of the plays with the highest
+mean TF-IDF scores was potentially not written by Shakespeare!
+Additionally, since the sole character we have data on in that play had
+a TF-IDF score which was only in the top 30\% of characters in the data
+set, this suggests that many other characters, like ensembles or parts
+which only appear in one or two scenes, have relatively generic dialogue
+or do not use unusual or uncommon words. TF-IDF can also be implemented
+relatively easily, without having to download a large model or data set,
+making it easier and quicker to use than other processing methods such
+as embeddings.
+
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+\end{document}

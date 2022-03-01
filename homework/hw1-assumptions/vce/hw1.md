@@ -17,7 +17,7 @@ kernelspec:
 
 **Vince Egalla (ve68)**
 
-**2022/02/17**
+**2022/03/01**
 
 
 > POLONIUS\
@@ -63,7 +63,6 @@ print(txt[:250])
 # Open local version of shakespeare.txt
 with open('shakespeare.txt', 'r') as f:
     content = f.read()
-    
 ```
 
 Make sure this works before you continue! 
@@ -88,25 +87,35 @@ Question(s):
 ```{code-cell} ipython3
 import re
 
-# regexr test
-# "(^[A-Z]{1}[\w ]*):\\n([\w .,:;?!'\"]*)[\\n]+(?=[A-Z])"
-
 patt = re.compile(
-    "(^[A-Z]{1}[\w]*[ A-Z]?[\w]*):" # If there is a second word, make sure it starts with a capital letter
+    
+    # Captures speaker at start of line
+        # Checks for capital letter
+        # Checks for optional second capital letter for a second word
+        # Will fail to capture speaker with three words (e.g. Second Class Citizen)
+    
+    "(^[A-Z]{1}[\w]*[ A-Z]?[\w]*):" 
+    
+    # Captures dialogue between speaker and end of line
+    
     "\\n(.*?)"
+    
+    # Positive look ahead for end of line and end of text
+    
     "(?=\\n\\n|\Z)",
     flags=re.S | re.M
 )
 ```
 
 ```{code-cell} ipython3
-# FIND `patt` SUCH THAT:  
+# Find `patt` such that:  
 matches = patt.findall(content)
 ```
 
 ```{code-cell} ipython3
 import pandas as pd
 
+# Convert matches to table with line number
 table_ts = pd.DataFrame.from_records(matches, columns=['speaker','dialogue'])
 
 table_ts['line_number'] = range(1, len(matches) + 1)
@@ -125,6 +134,8 @@ This is fairly open-ended, and you are not being judged completely on _accuracy_
 Instead, think outside the box a bit as to how you might accomplish this, and attempt to justify whatever approximations or assumptions you felt were appropriate.
 
 ```{code-cell} ipython3
+# Check if wordnet is a viable method for determining metadata
+
 import nltk
 try:
     nltk.data.find('tokenizers/punkt')
@@ -143,8 +154,13 @@ print(wn.synset('shakespeare.n.01').part_meronyms())
 ```
 
 ```{code-cell} ipython3
+# Metadata capture method
+    # Scrape Wikipedia for characters and play they appear in using regex
+    # Match character to speaker to merge play
+
 import requests
 
+# Get text content of both Wikipedia pages
 url_A_K = "https://en.wikipedia.org/wiki/List_of_Shakespearean_characters_(A%E2%80%93K)"
 page_A_K = requests.get(url_A_K)
 
@@ -153,42 +169,73 @@ page_L_Z = requests.get(url_L_Z)
 ```
 
 ```{code-cell} ipython3
+# Regex pattern for scraping character and play
 patt2 = re.compile(
     #"<ul><li><b>([\w ]*)</b>[\w\W]*?<i>([\w ]*)[\w\W]*?(?=\\n)",
     "<ul><li><b>([\w ]*)</b>[\w\W]*?>([\w ]*)</a>[\w\W]*?(?=\\n)",
     flags=re.S | re.M
 )
+
+# Regex doesn't perfectly capture tags from HTML text due to differing formats
+# Intended to match list <ul> to end of line \n
+    # Capture character name in bolded letters <b> ... </b> AND
+    # play name through HTML tags with <i> ... </i> or <a> ... </a>
+    # However, play name is less standardized than character name
+    # Patt2 yielded more results than other patterns
 ```
 
 ```{code-cell} ipython3
+# Capture characters and play names in page for A-K and convert to table
 matches_A_K = patt2.findall(page_A_K.text)
 
 table_A_K = pd.DataFrame.from_records(matches_A_K, columns=['character','play'])
 ```
 
 ```{code-cell} ipython3
+# Capture characters and play names in page for L-Z and convert to table
 matches_L_Z = patt2.findall(page_L_Z.text)
 
 table_L_Z = pd.DataFrame.from_records(matches_L_Z, columns=['character','play'])
 ```
 
 ```{code-cell} ipython3
+# Stack tables into one
 table_A_Z = pd.concat([table_A_K,table_L_Z],ignore_index=True)
 ```
 
 ```{code-cell} ipython3
+# Create temporary lower case versions for better matching
 table_ts['speaker_lower'] = table_ts['speaker'].str.lower()
 table_A_Z['character_lower'] = table_A_Z['character'].str.lower()
+
+# One alternative here is to use fuzzy matching for better match rates
 ```
 
 ```{code-cell} ipython3
+# Merge left to add meta data
+# Drop unnecessary columns
 table = table_ts\
     .merge(table_A_Z, how='left', left_on='speaker_lower', right_on='character_lower')\
     .drop(columns = ['speaker_lower','character','character_lower'])
 ```
 
 ```{code-cell} ipython3
+# Check values of play metadata
 table['play'].value_counts()
+```
+
+Out of 6460 observations of dialogue, only a fraction have metadata of a play. Method and regex are flawed in multiple ways.
+
+First, non-plays are captured (e.g. 'hist', 'bed trick', 'Ghost character'), identified by non-proper case phrases.
+
+Second, merge rate is fairly low. This may have multiple reasons as I am using an exact merge. Names must be spelled identically, beyond being lower case. White space on either side may be an issue here.
+
+Third, names will only be merged to one of possible names. Without knowledge of Shakespeare, I am unsure of if characters could share a name between plays, as unique individuals. This method assumes that all characters are uniquely identifiable by name.
+
+Fourth, non-named characters with dialgoue will not have a merge as they will not appear in Shakespeare characters Wikipedia page (e.g. 'First Citizen', 'All', 'Lords'). Groups of characters will be treated similarly.
+
+```{code-cell} ipython3
+# table_ts['speaker'].unique()
 ```
 
 ## Part 3

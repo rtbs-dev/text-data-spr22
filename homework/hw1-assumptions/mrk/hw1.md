@@ -92,7 +92,7 @@ This is fairly open-ended, and you are not being judged completely on accuracy. 
 
 
 ##### External Data Source
-A list of all Shakespearan characters and their respective plays.
+A list of all Shakespearan characters and their respective plays from the following site: https://www.behindthename.com/namesakes/list/shakespeare/play
 
 ```python
 ## set URL
@@ -112,34 +112,16 @@ df = df.applymap(str.lower)
 df.sample(5)
 ```
 
-##### Make a 'bag of words' type column 
-This column is a list of each token in the rest of the row in addition to each phrase in it's entireity. 
+##### Make a 'bag of words' type column for names in each play
+This column is a list of each token in the rest of the row (aka names).
 
 ```python
-def row_function(row):
-    ## split the play and name columns into tokens, create list
-    l = row['Play'].split(' ') + row['Name'].split(' ')
-    ## add the full phrase of name and play 
-    l.append(row['Play'])
-    l.append(row['Name'])
-    ## add non-empty 'other names'/nicknames
-    if row['Other Names'] != 'nan':
-        l.append(re.compile("\w+").findall(row['Other Names']))
-              
-    return l
-```
-
-```python
-df['bag_of_words'] = df.apply(lambda row : row_function(row), axis=1)
-df = df.drop(['Other Names', 'Unnamed: 3'], axis=1)
-```
-
-```python
-df
+names = df.groupby('Play')['Name'].apply(list).reset_index()
+names.sample(5)
 ```
 
 ##### Functions to assign most play origination
-Checks the speaker name from the shakespeare text and counts the number of times it appears in the bag of words. It then aggregates the total number of occurences per play and assigned the max play to that specfic instance. If there is a tie in the maximum, it randomly chooses amongst the highest. 
+This function checks the speaker name from the shakespeare text and counts the number of times it appears in the bag of words. It then aggregates the total number of occurences per play and assigned the max play to that specfic instance. If there is a tie in the maximum, it randomly chooses amongst the highest. 
 
 ```python
 def get_play(row):
@@ -171,30 +153,8 @@ def get_play(row):
 ```
 
 ```python
-## if name in shakespeare 
-def get_play_bow(row):
-    name = row['Speaker']
-    l = []
-    for value in df['bag_of_words']:
-        if name in value:
-            l.append(True)
-        else:
-            l.append(False)
-
-    tmp = df.copy()
-    tmp['test'] = l
-    tmp = tmp.groupby('Play').sum('test').reset_index()
-    
-    play_by_name = tmp[tmp['test'] == max(tmp['test'])].sample(1)['Play'].item()
-    
-    return play
-```
-
-```python
 shakespeare['play'] = shakespeare.apply(lambda row: get_play(row), axis=1)
-shakespeare['play_bow'] = shakespeare.apply(lambda row: get_play_bow(row), axis=1)
-
-shakespeare[['Speaker', 'Dialogue', 'play', 'play_bow']]
+shakespeare[['Speaker', 'Dialogue', 'play']]
 ```
 
 ##### Unpacking/ Example of function
@@ -326,14 +286,15 @@ heaps.show()
 We're going to ask which speaker was most "complex" using heap's law as a jumping off point.
 
 ```python
-# https://stackoverflow.com/questions/37508659/group-by-and-count-distinct-words-in-pandas-dataframe
+## each lines total word counts
 shakespeare['word_counts'] = shakespeare['Dialogue'].str.split().str.len()
 
-#(shakespeare['Dialogue'])
+## each lines distinct word counts
 shakespeare['distinct_word_counts'] = shakespeare.apply(lambda row: len(set(row['Dialogue'].split(' '))), axis = 1)
 ```
 
 ```python
+## aggregate by speaker
 heaps_per_speaker = shakespeare.groupby(['Speaker']).agg({'word_counts': 'sum', 'distinct_word_counts':'sum'}).reset_index()
 heaps_per_speaker.sample(5)
 ```
@@ -341,13 +302,15 @@ heaps_per_speaker.sample(5)
 Since we're doing this as a percentage, let's eliminate characters who say less than 10 words in this corpus since they will likely skew the percentages.
 
 ```python
+## only speakers with more than 10 words and create percentage
 heaps_per_speaker = heaps_per_speaker[heaps_per_speaker['word_counts'] > 10]
 heaps_per_speaker['%_distinct'] = heaps_per_speaker['distinct_word_counts']/heaps_per_speaker['word_counts']
 ```
 
-Let's think of complexity differently. In class notes, we've considered key words to be the opposite of stop words. So let's see which speaker has the least number of stopwords as a percentage
+Let's think of complexity differently. In class notes, we've considered key words to be the opposite of stop words. So let's see which speaker has the least number of stopwords as a percentage.
 
 ```python
+## remove stop words, focus on 'keywords'
 import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
@@ -357,29 +320,38 @@ shakespeare['text'] = shakespeare['Dialogue'].apply(lambda x: ' '.join([word for
 ```
 
 ```python
+## same process as before
+## get word counts
 shakespeare['word_counts'] = shakespeare['text'].str.split().str.len()
 shakespeare['distinct_word_counts'] = shakespeare.apply(lambda row: len(set(row['text'].split(' '))), axis = 1)
 
+## aggregate by speaker
 heaps_per_speaker = shakespeare.groupby(['Speaker']).agg({'word_counts': 'sum', 'distinct_word_counts':'sum'}).reset_index()
 heaps_per_speaker.sample(5)
 
+## get percentages
 heaps_per_speaker = heaps_per_speaker[heaps_per_speaker['word_counts'] > 10]
 heaps_per_speaker['%_distinct'] = heaps_per_speaker['distinct_word_counts']/heaps_per_speaker['word_counts']
 
-heaps_per_speaker.sort_values('%_distinct').tail(10)
+## sort by percentage
+heaps_per_speaker.sort_values('%_distinct').head(10)
 ```
 
-<!-- #region -->
 ##### Document how Technique was applied:
+First, using Heap's law as a jumping off point I tried an approach considering distinct words per number of total words, aggregated by speaker. To blend this technique with a more 'keyword'-like approach, I then removed stopwords from the text and recalculated the percentage of distinct words each speaker used. 
 
 ##### Results:
+The results, while mixed, seem in the right direction. For example, above we see the characters with the lowest percentage of unique "keywords" and most are some form of unnamed characters. This matches our intuition; less important characters are unnamed.
 
+Our proxy does a decent job of identifying speakers who introduce new concepts and move the plot forward (as one would guess from a metric that centers the introduction of distinct words).
 
 ##### Weaknesses:
+The fact that the _lowerst_ percentage above is 76% means that the range speaker "importance" is not extremely varied (only a spread of about 24 points). I think I might have liked to use some sampling techniques andinstead of siloing each speaker entirely, look at unique words across the entire text - but this also would have been more effective in a corpus of one play rather than an assortment of plays. 
 
-<!-- #endregion -->
+Another weakness is the skew due to word amounts. For example, looking at percentages belies to a certain degree, the true effect of each speaker - especially if they only said 13 words total! 
 
-# Sentiment of Plays
+
+# MISC: Sentiment of Plays
 
 ```python
 from textblob import TextBlob
@@ -391,21 +363,5 @@ shakespeare['text_polarity'] = shakespeare['Dialogue'].apply(getPolarity)
 ```
 
 ```python
-shakespeare
-```
-
-```python
-shakespeare.groupby('play').sum('text_polarity').reset_index()
-```
-
-# Markov's Language Generation Model
-
-```python
-text = ' '.join(shakespeare['Dialogue'])
-```
-
-```python
-import markovify
-model = markovify.Text(text, state_size=2, well_formed=False)
-model.make_sentence(tries=500)
+shakespeare.groupby('play').sum('text_polarity').reset_index()[['play','text_polarity']].sort_values('text_polarity')
 ```

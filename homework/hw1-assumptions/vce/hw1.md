@@ -135,6 +135,7 @@ Instead, think outside the box a bit as to how you might accomplish this, and at
 
 ```{code-cell} ipython3
 # Check if wordnet is a viable method for determining metadata
+# Do characters have associations through wordnet or conceptnet? Not really...
 
 import nltk
 try:
@@ -259,24 +260,54 @@ Whatever you choose, you must
 This is mostly about learning to transparently document your decisions, and iterate on a method for operationalizing useful analyses on text. 
 Your explanations should be understandable; homeworks will be peer-reviewed by your fellow students.
 
++++
+
+### Part 3 Method
+
+#### 'Interesting' measure of speaker through interactions / visualized with graphs
+
+First, identify when speakers reference other speakers in their dialogue.
+
+Second, convert speaker references to graph object.
+
+Third, visualize and apply filters to improve visualization.
+
 ```{code-cell} ipython3
+# Extract unique values of speakers. 
+    # This requires that individuals with names in dialogue must also have spoken dialogue.
+    # A named character is referenced but does not speak will not be considered.
+    # However, this method also captures non-proper nouns as individuals to be addressed (e.g. 'all', 'lady', 'lord')
+    # Inclusion of non-proper nouns may skew results when the addressed term is not used to address an individual or group.
+    # especially, if multiple plays are used through the text
+    
 speakers = table['speaker'].str.lower().unique()
 ```
 
 ```{code-cell} ipython3
 entity_list = []
 
+# regex to find speakers
+words_re = re.compile("|".join(speakers))
+
+# iterate over all dialogue
 for i in range(0, len(table)):
+    # If speaker is found in dialogue then ...
     if words_re.search(table.iloc[i]['dialogue'].lower()):
+        # Capture dialogue ...
         m = words_re.search(table.iloc[i]['dialogue'].lower())
+        # And line number, speaker, found speaker in dialogue
         entity_list.append([i, table.iloc[i]['speaker'].lower(), m.group(0)])
 ```
 
 ```{code-cell} ipython3
+# Convert list to df
 entity_df = pd.DataFrame(entity_list, columns=['line_number', 'speaker', 'addressed'])
 ```
 
 ```{code-cell} ipython3
+# Limit to unique instances of speakers for visualization
+    # Ignoring the frequency in which speakers address the same individual/group
+    # Interest is measured by diversity of addressed individuals
 entity_df_unique = entity_df\
     .drop(columns=['line_number'])\
     .drop_duplicates()\
@@ -289,6 +320,7 @@ import networkx as nx
 ```
 
 ```{code-cell} ipython3
+# Convert to graph object
 G =  nx.from_pandas_edgelist(
     entity_df_unique,
     source = 'speaker',
@@ -297,11 +329,13 @@ G =  nx.from_pandas_edgelist(
 
 ```{code-cell} ipython3
 # Default layout
+    # Too dense
 nx.draw_networkx(G)
 ```
 
 ```{code-cell} ipython3
 # Custom layout to increase distance between nodes and figure size
+    # Still dense, but at least readable
 plt.figure(figsize=(16,16)) 
 pos = nx.spring_layout(G, k=0.75, iterations=50)
 nx.draw_networkx(G, pos=pos, alpha=0.8)
@@ -309,6 +343,7 @@ plt.show()
 ```
 
 ```{code-cell} ipython3
+# Count how often speaker addresses unique individuals
 speaker_count = pd.DataFrame(entity_df_unique['speaker'].value_counts()\
     .rename_axis('speaker').reset_index(name='count'))
 ```
@@ -322,6 +357,8 @@ from plotnine import ggplot, aes, geom_point, theme, element_text, labs
 ```
 
 ```{code-cell} ipython3
+# Visualization of density
+    # Often individuals speak to less than 10 people or even 1 individual
 (
     ggplot(speaker_count) +
         geom_point(
@@ -340,6 +377,7 @@ from plotnine import ggplot, aes, geom_point, theme, element_text, labs
 ```
 
 ```{code-cell} ipython3
+# Check most 'interesting' speakers
 (
     ggplot(speaker_count[speaker_count['count'] > 15]) +
         geom_point(
@@ -358,5 +396,33 @@ from plotnine import ggplot, aes, geom_point, theme, element_text, labs
 ```
 
 ```{code-cell} ipython3
+# Filter out low-count speakers
+speaker_count_1 = speaker_count[speaker_count['count'] == 1]['speaker'].tolist()
 
+speaker_count_10 = speaker_count[speaker_count['count'] <= 10]['speaker'].tolist()
 ```
+
+```{code-cell} ipython3
+entity_df_unique_gt_10 = entity_df_unique[~entity_df_unique['speaker'].isin(speaker_count_10)]
+```
+
+```{code-cell} ipython3
+# New graph visualization
+    # In this visualization, nodes have at least 10 edges + visible edges
+    # Still dense, but there's some space for visual inspection
+    
+G2 =  nx.from_pandas_edgelist(
+    entity_df_unique_gt_10,
+    source = 'speaker',
+    target = 'addressed')
+
+plt.figure(figsize=(16,16)) 
+pos = nx.spring_layout(G2, k=0.75, iterations=50)
+nx.draw_networkx(G2, pos=pos, alpha=0.8)
+plt.show()
+```
+
+Overall, this visualization could be improved in multiple ways:
+* Remove non-proper nouns, due to their capacity to be used across multiple plays. However, this assumes that names are unique between plays, which may not be true. This should increase the separation between nodes, creating better identifiable clusters that could symbolize plays themselves.
+* Color nodes based on play, which could be possible with a better method of adding metadata.
+* Remove self-referencing nodes / loops in the graph visualization.

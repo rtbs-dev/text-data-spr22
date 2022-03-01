@@ -322,5 +322,89 @@ This is mostly about learning to transparently document your decisions, and iter
 Your explanations should be understandable; homeworks will be peer-reviewed by your fellow students.
 
 ```{code-cell} ipython3
-
+# Create a function for generating word clouds
+import matplotlib.pyplot as plt
+def value_ct_wordcloud(s: pd.Series):
+    from wordcloud import WordCloud
+    wc = (WordCloud(background_color="white", max_words=50)
+          .generate_from_frequencies(s.to_dict()))
+    plt.figure()
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()
 ```
+
+```{code-cell} ipython3
+# Visualize types of play
+(df.play.explode().value_counts()
+ .pipe(value_ct_wordcloud))
+```
+
+```{code-cell} ipython3
+# Visualize types of speaker
+(df.speaker.explode().value_counts()
+ .pipe(value_ct_wordcloud))
+```
+
+```{code-cell} ipython3
+# Tokenize dialogue
+from nltk.tokenize import word_tokenize
+df["tokens"] = (df['dialogue']
+                .str.replace(r'[^\w\s]', '', regex=True)  # remove punctuation
+                .str.lower()  # lower case
+                .apply(word_tokenize))
+df.head(3)
+```
+
+```{code-cell} ipython3
+# Remove stopwords from tokens
+from nltk.corpus import stopwords
+sw = stopwords.words("english")
+df['tokens'] = df['tokens'].apply(lambda x: [tkn for tkn in x if tkn not in sw])
+df.head(3)
+```
+
+```{code-cell} ipython3
+# Count the number of types
+df.tokens.explode().value_counts().head(30)
+```
+
+```{code-cell} ipython3
+# Add more stopwords
+extra = ['thou','thy','shall','thee','would','hath',
+         'let','one','may','us','upon','yet','tis']
+sw = sw + extra
+```
+
+```{code-cell} ipython3
+# Remove extra stopwords from tokens
+df['tokens'] = df['tokens'].apply(lambda x: [tkn for tkn in x if tkn not in sw])
+df.tail(3)
+```
+
+```{code-cell} ipython3
+# Generate word clouds for the 10 most frequent speakers
+speakers = df.speaker.explode().value_counts().head(10).index.tolist()
+df.speaker.explode().value_counts().head(10)
+```
+
+```{code-cell} ipython3
+speakers[0]
+```
+
+```{code-cell} ipython3
+# Generate word cloud for a speaker
+def speaker_wordcloud(name):
+    return (df[df.speaker == name]
+            .tokens.explode().value_counts()
+            .pipe(value_ct_wordcloud))
+```
+
+```{code-cell} ipython3
+# Visualize keywords of a speaker
+for name in speakers:
+    print(name)
+    speaker_wordcloud(name)
+```
+
+The word clouds above explore how interesting the speakers are. Juliet, for example, is all about love and Romeo, while Queen Margaret mentions a ton about the King and Edward. One weakness of this method is that some keywords do not necessarily represent meanings, but rather the name of the person talking to the speaker.

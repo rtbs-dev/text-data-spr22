@@ -221,7 +221,7 @@ table = table_ts\
 
 ```{code-cell} ipython3
 # Check values of play metadata
-table['play'].value_counts()
+table['speaker'].value_counts()
 ```
 
 Out of 6460 observations of dialogue, only a fraction have metadata of a play. Method and regex are flawed in multiple ways.
@@ -258,6 +258,104 @@ Whatever you choose, you must
 
 This is mostly about learning to transparently document your decisions, and iterate on a method for operationalizing useful analyses on text. 
 Your explanations should be understandable; homeworks will be peer-reviewed by your fellow students.
+
+```{code-cell} ipython3
+speakers = table['speaker'].str.lower().unique()
+```
+
+```{code-cell} ipython3
+entity_list = []
+
+for i in range(0, len(table)):
+    if words_re.search(table.iloc[i]['dialogue'].lower()):
+        m = words_re.search(table.iloc[i]['dialogue'].lower())
+        entity_list.append([i, table.iloc[i]['speaker'].lower(), m.group(0)])
+```
+
+```{code-cell} ipython3
+entity_df = pd.DataFrame(entity_list, columns=['line_number', 'speaker', 'addressed'])
+```
+
+```{code-cell} ipython3
+entity_df_unique = entity_df\
+    .drop(columns=['line_number'])\
+    .drop_duplicates()\
+    .reset_index(drop=True)
+```
+
+```{code-cell} ipython3
+import matplotlib.pyplot as plt
+import networkx as nx
+```
+
+```{code-cell} ipython3
+G =  nx.from_pandas_edgelist(
+    entity_df_unique,
+    source = 'speaker',
+    target = 'addressed')
+```
+
+```{code-cell} ipython3
+# Default layout
+nx.draw_networkx(G)
+```
+
+```{code-cell} ipython3
+# Custom layout to increase distance between nodes and figure size
+plt.figure(figsize=(16,16)) 
+pos = nx.spring_layout(G, k=0.75, iterations=50)
+nx.draw_networkx(G, pos=pos, alpha=0.8)
+plt.show()
+```
+
+```{code-cell} ipython3
+speaker_count = pd.DataFrame(entity_df_unique['speaker'].value_counts()\
+    .rename_axis('speaker').reset_index(name='count'))
+```
+
+```{code-cell} ipython3
+speaker_count
+```
+
+```{code-cell} ipython3
+from plotnine import ggplot, aes, geom_point, theme, element_text, labs
+```
+
+```{code-cell} ipython3
+(
+    ggplot(speaker_count) +
+        geom_point(
+            aes(
+                x='speaker',
+                y='count')) +
+        labs(
+            x = 'Speaker',
+            y = 'Count') +
+        theme(
+             axis_text_x=element_text(
+                 rotation=90, 
+                 hjust=1),
+             figure_size=(12, 6))
+)
+```
+
+```{code-cell} ipython3
+(
+    ggplot(speaker_count[speaker_count['count'] > 15]) +
+        geom_point(
+            aes(
+                x='speaker',
+                y='count')) +
+        labs(
+            x = 'Speaker',
+            y = 'Count') +
+        theme(
+             axis_text_x=element_text(
+                 rotation=90, 
+                 hjust=1),
+             figure_size=(12, 6))
+)
+```
 
 ```{code-cell} ipython3
 

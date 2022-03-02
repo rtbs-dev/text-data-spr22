@@ -105,6 +105,25 @@ patt = re.compile(
     "(?=\\n\\n|\Z)",
     flags=re.S | re.M
 )
+
+ts_patt = re.compile(
+    
+    # Beginning of file | two new lines
+    
+    "(?:\A|\n\n)"
+    
+    # Capital letter followed by anything until colon
+    
+    "(^[A-Z][\w ]+):$"
+    
+    # Anything, but lazy
+    
+    "\n([\s\S]+?)"
+    
+    # Look ahead until two new lines | end of file
+    
+    "(?=\n\n|\Z)",
+    flags = re.M)
 ```
 
 ```{code-cell} ipython3

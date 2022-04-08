@@ -6,11 +6,15 @@ channels:
 dependencies:
   - python=3.9
   - ipykernel
+  - dvc
   - numpy
   - seaborn
   - scikit-learn
   - pandas
+  - pyarrow
   - pip
   - pip:
     - datatest
     - coconut-develop[kernel]
+    - bertopic
+ 

@@ -1,0 +1,11 @@
+md5: 99c53b7095fc493097ff1fc30c22d205
+frozen: true
+deps:
+- path: resources/data/mtg/mtg.feather
+  repo:
+    url: https://github.com/TLP-COI/text-data-course
+    rev_lock: ee6cb03196eb6dca158d3b161617a172f868b213
+outs:
+- md5: 84e50093078e4324073a62424276b57d
+  size: 9411618
+  path: mtg.feather

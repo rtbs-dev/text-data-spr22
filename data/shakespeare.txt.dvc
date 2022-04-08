@@ -1,0 +1,11 @@
+md5: b4c8463ac5850c8e38fe852cb29d1ee2
+frozen: true
+deps:
+- path: resources/data/shakespeare/shakespeare.txt
+  repo:
+    url: https://github.com/TLP-COI/text-data-course
+    rev_lock: ee6cb03196eb6dca158d3b161617a172f868b213
+outs:
+- md5: 6fb458f1232090904fb40fe944165e91
+  size: 1115394
+  path: shakespeare.txt

@@ -1,4 +1,4 @@
-if __name__ == "__main__":
+def flavor_text_topic():
     import pandas as pd
     from bertopic import BERTopic
 
@@ -11,5 +11,6 @@ if __name__ == "__main__":
     topics, probs = topic_model.fit_transform(flavor_text)
 
     topic_model.save("flavor_text_topics")
-else:
-    print("Error")
+
+if __name__ == "__main__":
+    flavor_text_topic()

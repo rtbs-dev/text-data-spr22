@@ -1,16 +1,3 @@
----
-jupytext:
-  formats: ipynb,md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
-    format_version: 0.13
-    jupytext_version: 1.11.5
-kernelspec:
-  display_name: Python [conda env:text-data-class]
-  language: python
-  name: conda-env-text-data-class-py
----
 
 # Homework: Goals & Approaches
 
@@ -91,7 +78,17 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
     3. Once you have names, create a _Dynamic Topic Model_ by following [their documentation](https://maartengr.github.io/BERTopic/getting_started/topicsovertime/topicsovertime.html). Use the `release_date` column as timestamps. 
     4. Describe what you see, and any possible issues with the topic models BERTopic has created. **This is the hardest part... interpreting!**
 
-+++
+```{code-cell} ipython3
+from bertopic import BERTopic
+```
+
+```{code-cell} ipython3
+ft_topic_model = BERTopic.load("flavor_text_topics")
+```
+
+```{code-cell} ipython3
+ft_topic_model.visualize_topics()
+```
 
 ## Part 2 Supervised Classification
 

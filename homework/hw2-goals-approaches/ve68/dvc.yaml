@@ -4,4 +4,4 @@ stages:
       - topic-model.py
         mtg.feather
     outs:
-      - trained_bert_model.??
+      - flavor_text_topics

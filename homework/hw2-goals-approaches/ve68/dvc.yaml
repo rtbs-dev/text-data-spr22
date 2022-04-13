@@ -1,0 +1,7 @@
+stages:
+  topic-model:
+    deps:
+      - topic-model.py
+        mtg.feather
+    outs:
+      - trained_bert_model.??

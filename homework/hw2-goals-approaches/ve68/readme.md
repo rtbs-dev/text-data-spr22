@@ -1,3 +1,16 @@
+---
+jupytext:
+  formats: ipynb,md:myst
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.13.6
+kernelspec:
+  display_name: Python [conda env:text-data-class]
+  language: python
+  name: conda-env-text-data-class-py
+---
 
 # Homework: Goals & Approaches
 
@@ -20,8 +33,6 @@ In fact, you will likely be unable to create a set of ML algorithms that "beat" 
 However, to answer the three questions above, we need a way to explicitly track our decisions to use others' work, and efficiently _swap out_ that work for new ideas and directions as the need arises. 
 
 This homework is a "part 1" of sorts, where you will construct several inter-related pipelines in a way that will allow _much easier_ adjustment, experimentation, and measurement in "part 2"
-
-
 
 +++
 
@@ -46,12 +57,12 @@ Then you may load the data into your notebooks and scripts e.g. using pandas+pya
 
 ```{code-cell} ipython3
 import pandas as pd
-(pd.read_feather('../../data/mtg.feather')# <-- will need to change for your notebook location
+(pd.read_feather('../../../data/mtg.feather')# <-- will need to change for your notebook location
  .head()[['name','text', 'mana_cost', 'flavor_text','release_date', 'edhrec_rank']]  
 )
 ```
 
-But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display. 
+But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display.
 
 +++
 
@@ -90,6 +101,26 @@ ft_topic_model = BERTopic.load("flavor_text_topics")
 ft_topic_model.visualize_topics()
 ```
 
+```{code-cell} ipython3
+ft_topic_model.visualize_topics(
+    top_n_topics = 11)
+```
+
+### Names for Top 10 Topics
+
+1. Sword
+2. Goblins
+3. [Planet] Ravnica
+4. [Plane] Kamigawa
+5. Mages
+6. Hunter
+7. Necromancy
+8. Dragon
+9. Rakdos
+10. Sarpadian [Empire]
+
++++
+
 ## Part 2 Supervised Classification
 
 Using only the `text` and `flavor_text` data, predict the color identity of cards: 
@@ -107,9 +138,56 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - load both models and plot the _confusion matrix_ for each model ([see here for the multilabel-specific version](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html))
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
 
+```{code-cell} ipython3
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn import preprocessing
+```
 
+```{code-cell} ipython3
+df = pd.read_feather("../../../data/mtg.feather")
+```
 
-+++
+```{code-cell} ipython3
+X = df['text'] + df['flavor_text'].fillna('')
+```
+
+```{code-cell} ipython3
+ci = df['color_identity']
+```
+
+```{code-cell} ipython3
+tfidf = TfidfVectorizer(
+    min_df=5, 
+    stop_words='english')
+```
+
+```{code-cell} ipython3
+X_features = tfidf.fit_transform(X)
+```
+
+```{code-cell} ipython3
+X_features.shape
+```
+
+```{code-cell} ipython3
+single_color_identity = [list(i)[0] if len(i) == 1 else 0 for i in ci]
+```
+
+```{code-cell} ipython3
+le = preprocessing.LabelEncoder()
+```
+
+```{code-cell} ipython3
+y = le.fit_transform(y0)
+```
+
+```{code-cell} ipython3
+pd.DataFrame(y0).value_counts()
+```
+
+```{code-cell} ipython3
+pd.DataFrame(y).value_counts()
+```
 
 ## Part 3: Regression?
 

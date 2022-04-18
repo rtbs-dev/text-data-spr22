@@ -139,54 +139,55 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
 
 ```{code-cell} ipython3
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.svm import LinearSVC
+from sklearn.metrics import confusion_matrix
+
+from joblib import load
+```
+
+```{code-cell} ipython3
+multiclass_model = load('multiclass.joblib') 
 ```
 
 ```{code-cell} ipython3
 df = pd.read_feather("../../../data/mtg.feather")
-```
 
-```{code-cell} ipython3
-X = df['text'] + df['flavor_text'].fillna('')
-```
+text = df['text'] + df['flavor_text'].fillna('')
 
-```{code-cell} ipython3
-ci = df['color_identity']
-```
 
-```{code-cell} ipython3
+# Convert this into scikit-learn pipeline?
 tfidf = TfidfVectorizer(
     min_df=5, 
     stop_words='english')
-```
 
-```{code-cell} ipython3
-X_features = tfidf.fit_transform(X)
-```
-
-```{code-cell} ipython3
-X_features.shape
-```
-
-```{code-cell} ipython3
+X_tfidf = tfidf.fit_transform(text)
+    
+ci = df['color_identity']
+    
 single_color_identity = [list(i)[0] if len(i) == 1 else 0 for i in ci]
-```
-
-```{code-cell} ipython3
+    
 le = preprocessing.LabelEncoder()
+    
+y = le.fit_transform(single_color_identity)
+    
+X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 2022)
+y_pred = multiclass_model.predict(X_test)
+conf_mat = confusion_matrix(y_test, y_pred)
 ```
 
 ```{code-cell} ipython3
-y = le.fit_transform(y0)
-```
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-```{code-cell} ipython3
-pd.DataFrame(y0).value_counts()
-```
-
-```{code-cell} ipython3
-pd.DataFrame(y).value_counts()
+fig, ax = plt.subplots(figsize=(10,10))
+sns.heatmap(conf_mat, annot=True, fmt='d')
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.show()
 ```
 
 ## Part 3: Regression?

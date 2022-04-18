@@ -139,18 +139,31 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
 
 ```{code-cell} ipython3
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-from sklearn.svm import LinearSVC
-from sklearn.metrics import confusion_matrix
-
+# Load scikit-learn model
 from joblib import load
+
+# Processing
+import pandas as pd
+from sklearn import preprocessing
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+
+# Evaluation
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import multilabel_confusion_matrix
+
+# Plotting
+import matplotlib.pyplot as plt
+import seaborn as sns
 ```
 
 ```{code-cell} ipython3
-multiclass_model = load('multiclass.joblib') 
+multiclass_model = load('multiclass.joblib')
+```
+
+```{code-cell} ipython3
+multilabel_model = load('multilabel.joblib')
 ```
 
 ```{code-cell} ipython3
@@ -158,35 +171,81 @@ df = pd.read_feather("../../../data/mtg.feather")
 
 text = df['text'] + df['flavor_text'].fillna('')
 
-
 # Convert this into scikit-learn pipeline?
 tfidf = TfidfVectorizer(
     min_df=5, 
     stop_words='english')
 
 X_tfidf = tfidf.fit_transform(text)
-    
+
 ci = df['color_identity']
-    
-single_color_identity = [list(i)[0] if len(i) == 1 else 0 for i in ci]
-    
-le = preprocessing.LabelEncoder()
-    
-y = le.fit_transform(single_color_identity)
-    
-X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 2022)
-y_pred = multiclass_model.predict(X_test)
-conf_mat = confusion_matrix(y_test, y_pred)
 ```
 
 ```{code-cell} ipython3
-import matplotlib.pyplot as plt
-import seaborn as sns
+single_color_identity = [list(i)[0] if len(i) == 1 else 0 for i in ci]
+    
+le = preprocessing.LabelEncoder()
+y_mc = le.fit_transform(single_color_identity)
+
+X_train, X_test, y_mc_train, y_mc_test = train_test_split(X_tfidf, y_mc, random_state = 2022)
+```
+
+```{code-cell} ipython3
+y_mc_pred = multiclass_model.predict(X_test)
+
+cf_mc = confusion_matrix(y_mc_test, y_mc_pred)
 
 fig, ax = plt.subplots(figsize=(10,10))
-sns.heatmap(conf_mat, annot=True, fmt='d')
+sns.heatmap(cf_mc, annot=True, fmt='d')
 plt.ylabel('Actual')
 plt.xlabel('Predicted')
+plt.show()
+```
+
+```{code-cell} ipython3
+cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+y_ml = cv.fit_transform(ci)
+
+X_train, X_test, y_ml_train, y_ml_test = train_test_split(X_tfidf, y_ml, random_state = 20220418)
+```
+
+```{code-cell} ipython3
+y_ml_pred = multilabel_model.predict(X_test)
+```
+
+```{code-cell} ipython3
+cf_ml = multilabel_confusion_matrix(y_ml_test, y_ml_pred)
+```
+
+#### Reference
+https://stackoverflow.com/questions/62722416/plot-confusion-matrix-for-multilabel-classifcation-python
+
+```{code-cell} ipython3
+def print_confusion_matrix(confusion_matrix, axes, class_label, class_names, fontsize=14):
+
+    df_cm = pd.DataFrame(
+        confusion_matrix, index=class_names, columns=class_names,
+    )
+
+    try:
+        heatmap = sns.heatmap(df_cm, annot=True, fmt="d", cbar=False, ax=axes)
+    except ValueError:
+        raise ValueError("Confusion matrix values must be integers.")
+        
+    heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
+    heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
+    axes.set_ylabel('True label')
+    axes.set_xlabel('Predicted label')
+    axes.set_title("Confusion Matrix for the class - " + class_label)
+```
+
+```{code-cell} ipython3
+fig, ax = plt.subplots(5, 1, figsize=(8, 8))
+    
+for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, cv.get_feature_names_out()):
+    print_confusion_matrix(cfs_matrix, axes, label, ["N", "Y"])
+    
+fig.tight_layout()
 plt.show()
 ```
 

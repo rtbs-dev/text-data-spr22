@@ -1,4 +1,4 @@
-# ## Part 2 Supervised Classification
+# ## Part 2 Supervised Classification - Multiclass
 #
 # Using only the `text` and `flavor_text` data, predict the color identity of cards: 
 #
@@ -38,11 +38,11 @@ def multiclass():
     
     X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 20220418)
     
-    model = LinearSVC()
-    model.fit(X_train, y_train)
-    dump(model, 'multiclass.joblib') 
+    multiclass_model = LinearSVC()
+    
+    multiclass_model.fit(X_train, y_train)
+    
+    dump(multiclass_model, 'multiclass.joblib') 
 
 if __name__ == "__main__":
     multiclass()
-
-

@@ -5,3 +5,15 @@ stages:
         mtg.feather
     outs:
       - flavor_text_topics
+  multiclass:
+    deps:
+      - multiclass.py
+        mtg.feather
+    outs:
+      - multiclass.joblib
+  multilabel:
+    deps:
+      - multilabel.py
+        mtg.feather
+    out:
+      - multilabel.joblib

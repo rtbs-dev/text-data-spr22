@@ -75,7 +75,11 @@ You will need to submit a pull-request on DagsHub with the following additions:
     - **source code** and **scripts** that define the preprocessing and prediction `Pipeline`'s you wish to create. You may then _print_ the content of those scripts at the end of your notebook e.g. as appendices using 
 - any updates to `environment.yml` to add the dependencies you want to use for this homework
 
-+++
+```{code-cell} ipython3
+import pandas as pd
+
+df = pd.read_feather("../../../data/mtg.feather")
+```
 
 ## Part 1: Unsupervised Exploration
 
@@ -91,19 +95,13 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
 
 ```{code-cell} ipython3
 from bertopic import BERTopic
-```
 
-```{code-cell} ipython3
 ft_topic_model = BERTopic.load("flavor_text_topics")
 ```
 
 ```{code-cell} ipython3
-ft_topic_model.visualize_topics()
-```
-
-```{code-cell} ipython3
 ft_topic_model.visualize_topics(
-    top_n_topics = 11)
+    top_n_topics=11)
 ```
 
 ### Names for Top 10 Topics
@@ -119,9 +117,23 @@ ft_topic_model.visualize_topics(
 9. Rakdos
 10. Sarpadian [Empire]
 
-+++
+```{code-cell} ipython3
+df_ft_rd = df[['flavor_text', 'release_date']].dropna().reset_index(drop=True)
+```
 
-## Part 2 Supervised Classification
+```{code-cell} ipython3
+topics, probs = ft_topic_model.transform(df_ft_rd['flavor_text'])
+```
+
+```{code-cell} ipython3
+topics_over_time = ft_topic_model.topics_over_time(df_ft_rd['flavor_text'], topics, df_ft_rd['release_date'])
+```
+
+```{code-cell} ipython3
+ft_topic_model.visualize_topics_over_time(topics_over_time, top_n_topics=20)
+```
+
+## Part 2: Supervised Classification
 
 Using only the `text` and `flavor_text` data, predict the color identity of cards: 
 
@@ -143,7 +155,6 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
 from joblib import load
 
 # Processing
-import pandas as pd
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -163,12 +174,6 @@ multiclass_model = load('multiclass.joblib')
 ```
 
 ```{code-cell} ipython3
-multilabel_model = load('multilabel.joblib')
-```
-
-```{code-cell} ipython3
-df = pd.read_feather("../../../data/mtg.feather")
-
 text = df['text'] + df['flavor_text'].fillna('')
 
 # Convert this into scikit-learn pipeline?
@@ -200,6 +205,10 @@ sns.heatmap(cf_mc, annot=True, fmt='d')
 plt.ylabel('Actual')
 plt.xlabel('Predicted')
 plt.show()
+```
+
+```{code-cell} ipython3
+multilabel_model = load('multilabel.joblib')
 ```
 
 ```{code-cell} ipython3
@@ -256,8 +265,57 @@ plt.show()
 - Like above, add a script and dvc stage to create and train your model
 - in the notebook, aside from your descriptions, plot the `predicted` vs. `actual` rank, with a 45-deg line showing what "perfect prediction" should look like. 
 - This is a freeform part, so think about the big picture and keep track of your decisions: 
-    - what model did you choose? Why? 
-    - What data did you use from the original dataset? How did you proprocess it? 
+    - What model did you choose? Why? 
+    - What data did you use from the original dataset? How did you preprocess it? 
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
+
+```{code-cell} ipython3
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+    
+from sklearn.linear_model import ElasticNet
+```
+
+```{code-cell} ipython3
+df = pd.read_feather("../../../data/mtg.feather")
+```
+
+```{code-cell} ipython3
+df_er_ft_rd = df[['edhrec_rank','flavor_text', 'text']].dropna().reset_index(drop=True)
+```
+
+```{code-cell} ipython3
+y = df_er_ft_rd ['edhrec_rank']
+```
+
+```{code-cell} ipython3
+text = df_er_ft_rd['text'] + df_er_ft_rd ['flavor_text'].fillna('')
+
+tfidf = TfidfVectorizer(
+    min_df=5, 
+    stop_words='english')
+
+X_tfidf = tfidf.fit_transform(text)
+    
+X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 20220418)
+    
+regression_model = ElasticNet(random_state=0)
+    
+regression_model.fit(X_train, y_train)
+    
+```
+
+```{code-cell} ipython3
+y_pred = regression_model.predict(X_test)
+```
+
+```{code-cell} ipython3
+sns.scatterplot(x=y_test, y=y_pred)
+```
+
+```{code-cell} ipython3
+
+```

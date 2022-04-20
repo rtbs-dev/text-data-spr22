@@ -17,3 +17,9 @@ stages:
         mtg.feather
     out:
       - multilabel.joblib
+  regression:
+    deps:
+      - regression.py
+        mtg.feather
+    out:
+      - regression.joblib

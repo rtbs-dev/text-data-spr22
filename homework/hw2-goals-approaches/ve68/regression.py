@@ -22,8 +22,9 @@ def regression(seed=2022):
     from sklearn import preprocessing
     from sklearn.model_selection import train_test_split
 
-    from sklearn.linear_model import ElasticNet, ElasticNetCV
+    from sklearn.linear_model import ElasticNet, ElasticNetCV, Lasso
 
+    
     import pickle
     
     df = pd.read_feather("../../../data/mtg.feather")
@@ -45,13 +46,26 @@ def regression(seed=2022):
     
     y = df['edhrec_rank']
     
-    X_train, X_test, y_test, y_test = train_test_split(X_tfidf, y, test_size=0.20, random_state=seed)
+    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.20, random_state=seed)
     
-    regression_model = ElasticNetCV(cv=5, random_state=0)
+    elasticnet_model = ElasticNet(random_state=0)
     
-    regression_model.fit(X_train, y_train)
+    elasticnet_model.fit(X_train, y_train)
     
-    pickle.dump(regression_model, open('regression_elasticnet.sav', 'wb'))
+    pickle.dump(elasticnet_model, open('regression_elasticnet.sav', 'wb'))
+    
+    ## ElasticNetCV with 5 Cross Folds takes 18 minutes to run with nearly identical results
+    #regression_cv_model = ElasticNetCV(cv=5, random_state=0)
+    #regression_cv_model.fit(X_train, y_train)
+    #pickle.dump(regression_model, open('regression_elasticnet_cv.sav', 'wb'))
+    
+    lasso_model = Lasso(alpha=0.1)
+    
+    lasso_model.fit(X_train, y_train)
+    
+    pickle.dump(lasso_model, open('regression_lasso.sav', 'wb'))
 
 if __name__ == "__main__":
     regression()
+
+

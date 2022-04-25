@@ -165,10 +165,12 @@ import seaborn as sns
 ```
 
 ```{code-cell} ipython3
+# Load Multiclass Model
 multiclass_model = pickle.load(open('multiclass.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
+# Prepare Multiclass Model Features for Predictions on Test Set
 text = df['text'] + df['flavor_text'].fillna('')
 
 tfidf = TfidfVectorizer(
@@ -176,11 +178,12 @@ tfidf = TfidfVectorizer(
     stop_words='english')
 
 X_tfidf = tfidf.fit_transform(text)
-
-ci = df['color_identity']
 ```
 
 ```{code-cell} ipython3
+# Preprocess Output for Multiclass Prediction
+ci = df['color_identity']
+
 single_color_identity = [list(i)[0] if len(i) == 1 else 0 for i in ci]
     
 le = preprocessing.LabelEncoder()
@@ -190,6 +193,7 @@ X_train, X_test, y_mc_train, y_mc_test = train_test_split(X_tfidf, y_mc, random_
 ```
 
 ```{code-cell} ipython3
+# Predict and Visualize Multiclass Confusion Matrix
 y_mc_pred = multiclass_model.predict(X_test)
 
 cf_mc = confusion_matrix(y_mc_test, y_mc_pred)
@@ -202,10 +206,12 @@ plt.show()
 ```
 
 ```{code-cell} ipython3
+# Load Multilabel Model
 multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
+# Preprocess Output for Multilabel Prediction
 cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
 y_ml = cv.fit_transform(ci)
 
@@ -213,11 +219,8 @@ X_train, X_test, y_ml_train, y_ml_test = train_test_split(X_tfidf, y_ml, random_
 ```
 
 ```{code-cell} ipython3
+# Predict Multilabel Classification
 y_ml_pred = multilabel_model.predict(X_test)
-```
-
-```{code-cell} ipython3
-cf_ml = multilabel_confusion_matrix(y_ml_test, y_ml_pred)
 ```
 
 #### Reference
@@ -225,7 +228,13 @@ https://stackoverflow.com/questions/62722416/plot-confusion-matrix-for-multilabe
 
 ```{code-cell} ipython3
 def print_confusion_matrix(confusion_matrix, axes, class_label, class_names, fontsize=14):
-
+    """
+    Print Multilabel Confusion Matrices
+    :param confusion_matrix:
+    :param axes: Axes
+    :param class_label: Feature Name
+    :param class_names: N/Y
+    """
     df_cm = pd.DataFrame(
         confusion_matrix, index=class_names, columns=class_names,
     )
@@ -243,6 +252,9 @@ def print_confusion_matrix(confusion_matrix, axes, class_label, class_names, fon
 ```
 
 ```{code-cell} ipython3
+# Visualize Multilabel Confusion Matrices
+cf_ml = multilabel_confusion_matrix(y_ml_test, y_ml_pred)
+
 fig, ax = plt.subplots(5, 1, figsize=(8, 8))
     
 for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, cv.get_feature_names_out()):
@@ -280,15 +292,12 @@ df = pd.read_feather("../../../data/mtg.feather")
 ```
 
 ```{code-cell} ipython3
-df
+elasticnet_model = pickle.load(open('regression_elasticnet.sav', 'rb'))
+elasticnet_cv_model = pickle.load(open('regression_elasticnet_cv.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
 df = df[df['edhrec_rank'].notna()]
-```
-
-```{code-cell} ipython3
-y = df['edhrec_rank']
 ```
 
 ```{code-cell} ipython3
@@ -299,6 +308,8 @@ tfidf = TfidfVectorizer(
     stop_words='english')
 
 X_tfidf = tfidf.fit_transform(df['text_flavor_text'])
+
+y = df['edhrec_rank']
 ```
 
 ```{code-cell} ipython3
@@ -306,13 +317,7 @@ X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.20, 
 ```
 
 ```{code-cell} ipython3
-regression_model = ElasticNetCV(cv=5, random_state=0)
-    
-regression_model.fit(X_train, y_train)
-```
-
-```{code-cell} ipython3
-y_pred = regression_model.predict(X_test)
+y_pred = elasticnet_model.predict(X_test)
 ```
 
 ```{code-cell} ipython3
@@ -320,5 +325,9 @@ sns.scatterplot(x=y_test, y=y_pred)
 ```
 
 ```{code-cell} ipython3
+y_pred = elasticnet_cv_model.predict(X_test)
+```
 
+```{code-cell} ipython3
+sns.scatterplot(x=y_test, y=y_pred)
 ```

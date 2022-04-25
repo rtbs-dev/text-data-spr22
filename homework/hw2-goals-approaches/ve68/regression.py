@@ -54,7 +54,7 @@ def regression(seed=2022):
     
     pickle.dump(elasticnet_model, open('regression_elasticnet.sav', 'wb'))
     
-    ## ElasticNetCV with 5 Cross Folds takes 18 minutes to run with nearly identical results
+    ## ElasticNetCV with 5 Cross Folds takes 18 minutes to run with identical results
     #regression_cv_model = ElasticNetCV(cv=5, random_state=0)
     #regression_cv_model.fit(X_train, y_train)
     #pickle.dump(regression_model, open('regression_elasticnet_cv.sav', 'wb'))

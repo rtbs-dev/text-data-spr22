@@ -71,8 +71,30 @@ You will need to submit a pull-request on DagsHub with the following additions:
 - any updates to `environment.yml` to add the dependencies you want to use for this homework
 
 ```{code-cell} ipython3
-import pandas as pd
+# Load scikit-learn model
+import pickle
 
+# Processing
+import pandas as pd
+import numpy as np
+from sklearn import preprocessing
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+
+# Topic Modeling
+from bertopic import BERTopic
+
+# Evaluation
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import multilabel_confusion_matrix
+
+# Plotting
+import matplotlib.pyplot as plt
+import seaborn as sns
+```
+
+```{code-cell} ipython3
 df = pd.read_feather("../../../data/mtg.feather")
 ```
 
@@ -89,8 +111,6 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
     4. Describe what you see, and any possible issues with the topic models BERTopic has created. **This is the hardest part... interpreting!**
 
 ```{code-cell} ipython3
-from bertopic import BERTopic
-
 ft_topic_model = BERTopic.load("flavor_text_topics")
 ```
 
@@ -264,7 +284,7 @@ fig.tight_layout()
 plt.show()
 ```
 
-## Part 3: Regression?
+## Part 3: Regression
 
 > Can we predict the EDHREC "rank" of the card using the data we have available? 
 
@@ -276,16 +296,6 @@ plt.show()
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
-
-```{code-cell} ipython3
-import numpy as np
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-
-from sklearn import linear_model
-```
 
 ```{code-cell} ipython3
 elasticnet_model = pickle.load(open('regression_elasticnet.sav', 'rb'))
@@ -366,4 +376,8 @@ plt.show()
 print(f"# Features in Data: {X_tfidf.shape[1]}")
 print(f"# Non-Zero Features in ElasticNet: {np.count_nonzero(elasticnet_model.coef_)}")
 print(f"# Non-Zero Features in LASSO: {np.count_nonzero(lasso_model.coef_)}")
+```
+
+```{code-cell} ipython3
+
 ```

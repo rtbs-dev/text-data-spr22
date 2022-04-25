@@ -21,7 +21,7 @@ def multilabel():
     from sklearn.svm import LinearSVC
     from sklearn.multiclass import OneVsRestClassifier
 
-    from joblib import dump
+    import pickle
 
     df = pd.read_feather("../../../data/mtg.feather")
 
@@ -46,7 +46,9 @@ def multilabel():
     
     multilabel_model.fit(X_train, y_train)
     
-    dump(multilabel_model, 'multilabel.joblib') 
+    pickle.dump(multilabel_model, open('multilabel.sav', 'wb'))
 
 if __name__ == "__main__":
     multilabel()
+
+

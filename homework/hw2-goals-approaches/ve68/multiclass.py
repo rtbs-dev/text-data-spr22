@@ -16,10 +16,10 @@ def multiclass():
 
     from sklearn.svm import LinearSVC
 
-    from joblib import dump
+    import pickle
 
     df = pd.read_feather("../../../data/mtg.feather")
-
+    
     text = df['text'] + df['flavor_text'].fillna('')
 
     tfidf = TfidfVectorizer(
@@ -36,13 +36,15 @@ def multiclass():
     
     y = le.fit_transform(single_color_identity)
     
-    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 20220418)
+    X_train, X_validate, y_train, y_validate = train_test_split(X_tfidf, y, random_state = 2022)
     
     multiclass_model = LinearSVC()
     
     multiclass_model.fit(X_train, y_train)
     
-    dump(multiclass_model, 'multiclass.joblib') 
+    pickle.dump(multiclass_model, open('multiclass.sav', 'wb'))
 
 if __name__ == "__main__":
     multiclass()
+
+

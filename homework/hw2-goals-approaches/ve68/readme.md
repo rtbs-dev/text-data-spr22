@@ -55,12 +55,7 @@ In order to ensure your local copy of the repo has the actual data (instead of j
 
 Then you may load the data into your notebooks and scripts e.g. using pandas+pyarrow:
 
-```{code-cell} ipython3
-import pandas as pd
-(pd.read_feather('../../../data/mtg.feather')# <-- will need to change for your notebook location
- .head()[['name','text', 'mana_cost', 'flavor_text','release_date', 'edhrec_rank']]  
-)
-```
++++
 
 But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display.
 
@@ -152,7 +147,7 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
 
 ```{code-cell} ipython3
 # Load scikit-learn model
-from joblib import load
+import pickle
 
 # Processing
 from sklearn import preprocessing
@@ -170,13 +165,12 @@ import seaborn as sns
 ```
 
 ```{code-cell} ipython3
-multiclass_model = load('multiclass.joblib')
+multiclass_model = pickle.load(open('multiclass.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
 text = df['text'] + df['flavor_text'].fillna('')
 
-# Convert this into scikit-learn pipeline?
 tfidf = TfidfVectorizer(
     min_df=5, 
     stop_words='english')
@@ -208,7 +202,7 @@ plt.show()
 ```
 
 ```{code-cell} ipython3
-multilabel_model = load('multilabel.joblib')
+multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3

@@ -283,17 +283,13 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
-    
-from sklearn.linear_model import ElasticNet, ElasticNetCV
-```
 
-```{code-cell} ipython3
-df = pd.read_feather("../../../data/mtg.feather")
+from sklearn import linear_model
 ```
 
 ```{code-cell} ipython3
 elasticnet_model = pickle.load(open('regression_elasticnet.sav', 'rb'))
-elasticnet_cv_model = pickle.load(open('regression_elasticnet_cv.sav', 'rb'))
+lasso_model = pickle.load(open('regression_lasso.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
@@ -317,17 +313,57 @@ X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.20, 
 ```
 
 ```{code-cell} ipython3
-y_pred = elasticnet_model.predict(X_test)
+viz_X, viz_y = train_test_split(df, test_size=0.20, random_state=2022)
 ```
 
 ```{code-cell} ipython3
-sns.scatterplot(x=y_test, y=y_pred)
+viz_y['pred_elasticnet'] = elasticnet_model.predict(X_test)
 ```
 
 ```{code-cell} ipython3
-y_pred = elasticnet_cv_model.predict(X_test)
+fig, ax = plt.subplots(figsize=(10,10))
+
+sns.scatterplot(
+    x=viz_y['edhrec_rank'], 
+    y=viz_y['pred_elasticnet'],
+    hue=viz_y['block'])
+
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+
+plt.xlim((0,22000))
+plt.ylim((0,22000))
+plt.axline((0, 0), (1, 1), linewidth=2, color='r')
+
+plt.ylabel('Prediction')
+plt.xlabel('EDHREC Rank')
+
+plt.show()
 ```
 
 ```{code-cell} ipython3
-sns.scatterplot(x=y_test, y=y_pred)
+viz_y['pred_lasso'] = lasso_model.predict(X_test)
+```
+
+```{code-cell} ipython3
+fig, ax = plt.subplots(figsize=(10,10))
+
+sns.scatterplot(
+    x=viz_y['edhrec_rank'], 
+    y=viz_y['pred_lasso'],
+    hue=viz_y['block'])
+
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+
+plt.axline((0, 0), (1, 1), linewidth=2, color='r')
+
+plt.ylabel('Prediction')
+plt.xlabel('EDHREC Rank')
+
+plt.show()
+```
+
+```{code-cell} ipython3
+print(f"# Features in Data: {X_tfidf.shape[1]}")
+print(f"# Non-Zero Features in ElasticNet: {np.count_nonzero(elasticnet_model.coef_)}")
+print(f"# Non-Zero Features in LASSO: {np.count_nonzero(lasso_model.coef_)}")
 ```

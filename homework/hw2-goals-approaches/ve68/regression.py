@@ -11,37 +11,47 @@
 #     
 # How did you do? What would you like to try if you had more time?
 
-def regression():
+def regression(seed=2022):
+    """
+    Prepares MTG data (X, y) and exports regression model using ElasticNetCV
+    :param seed: Seed to guarantee consistent results
+    """
     import pandas as pd
+
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn import preprocessing
     from sklearn.model_selection import train_test_split
-    
-    from sklearn.linear_model import ElasticNet
-    
-    from joblib import dump
 
+    from sklearn.linear_model import ElasticNet, ElasticNetCV
+
+    import pickle
+    
     df = pd.read_feather("../../../data/mtg.feather")
-
-    df_er_ft_rd = df[['edhrec_rank','flavor_text', 'text']].dropna().reset_index(drop=True)
-
-    text = df_er_ft_rd['text'] + df_er_ft_rd ['flavor_text'].fillna('')
+    
+    # Remove observations without rank
+    df = df[df['edhrec_rank'].notna()]
+    
+    df['text_flavor_text'] = df['text'] + df['flavor_text'].fillna('')
 
     tfidf = TfidfVectorizer(
         min_df=5, 
         stop_words='english')
 
-    X_tfidf = tfidf.fit_transform(text)
+    X_tfidf = tfidf.fit_transform(df['text_flavor_text'])
 
-    y = df_er_ft_rd ['edhrec_rank']
+    ## Attempts to add non-text data to features; Failed to create CSR with added columns
+    #from scipy.sparse import hstack
+    #X_features = hstack((X_tfidf,np.array(df['converted_mana_cost'])[:,None])).toarray()
     
-    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 20220420)
+    y = df['edhrec_rank']
     
-    regression_model = ElasticNet(random_state=0)
-
+    X_train, X_test, y_test, y_test = train_test_split(X_tfidf, y, test_size=0.20, random_state=seed)
+    
+    regression_model = ElasticNetCV(cv=5, random_state=0)
+    
     regression_model.fit(X_train, y_train)
     
-    dump(regression_model, 'regrsesion.joblib') 
+    pickle.dump(regression_model, open('regression_elasticnet.sav', 'wb'))
 
 if __name__ == "__main__":
     regression()

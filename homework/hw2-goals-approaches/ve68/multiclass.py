@@ -8,7 +8,11 @@
 # - Source code for pipelines
 #     - in `multiclass.py`, again load data and train a Pipeline that preprocesses the data and trains a multiclass classifier (`LinearSVC`), and saves the model pickel output once trained. target labels with more than one color should be _unlabeled_! 
 
-def multiclass():
+def multiclass(seed=2022):
+    """
+    Prepares MTG data (X, y) and exports multiclass model using LinearSVC
+    :param seed: Seed to guarantee consistent results
+    """
     import pandas as pd
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn import preprocessing
@@ -36,7 +40,7 @@ def multiclass():
     
     y = le.fit_transform(single_color_identity)
     
-    X_train, X_validate, y_train, y_validate = train_test_split(X_tfidf, y, random_state = 2022)
+    X_train, X_validate, y_train, y_validate = train_test_split(X_tfidf, y, random_state=2022)
     
     multiclass_model = LinearSVC()
     

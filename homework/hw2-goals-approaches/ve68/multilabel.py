@@ -12,7 +12,11 @@
 # #### Reference
 # https://towardsdatascience.com/multi-label-text-classification-with-scikit-learn-30714b7819c5
 
-def multilabel():
+def multilabel(seed=2022):
+    """
+    Prepares MTG data (X, y) and exports multilabel model using LinearSVC
+    :param seed: Seed to guarantee consistent results
+    """
     import pandas as pd
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn import preprocessing
@@ -40,7 +44,7 @@ def multilabel():
 
     y = cv.fit_transform(ci)
 
-    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state = 20220418)
+    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state=seed)
     
     multilabel_model = OneVsRestClassifier(LinearSVC(), n_jobs=1)
     

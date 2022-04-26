@@ -12,61 +12,40 @@ kernelspec:
   name: conda-env-text-data-class-py
 ---
 
-# Homework: Goals & Approaches
+# Homework 2
 
 > The body grows stronger under stress. The mind does not.
 > 
 >  -- Magic the Gathering, _Fractured Sanity_
 
-This homework deals with the goals you must define, along with the approaches you deem necessary to achieve those goals. 
-Key to this will be a focus on your _workflows_: 
-
-- are they reproducible? 
-- are they maintainable? 
-- are they well-justified and communicated? 
-
-This is not a "machine-learning" course, but machine learning plays a large part in modern text analysis and NLP. 
-Machine learning, in-turn, has a number of issues tracking and solving issues in a collaborative, asynchronous, distributed manner. 
-
-It's not inherently _wrong_ to use pre-configured models and libraries! 
-In fact, you will likely be unable to create a set of ML algorithms that "beat" something others have spent 100's of hours creating, optimizing, and validating. 
-However, to answer the three questions above, we need a way to explicitly track our decisions to use others' work, and efficiently _swap out_ that work for new ideas and directions as the need arises. 
-
-This homework is a "part 1" of sorts, where you will construct several inter-related pipelines in a way that will allow _much easier_ adjustment, experimentation, and measurement in "part 2"
-
-
-
 +++
 
 ## Setup
+### Packages
 
-### Dependencies 
-As before, ensure you have an up-to-date environment to isolate your work. 
-Use the `environment.yml` file in the project root to create/update the `text-data-class` environment. 
-> I expect any additional dependencies to be added here, which will show up on your pull-request. 
+```{code-cell} ipython3
+import pandas as pd
+import warnings
+warnings.filterwarnings("ignore")
+```
+
+```{code-cell} ipython3
+from bertopic import BERTopic
+```
 
 ### Data
-Once again, we have set things up to use DVC to import our data. 
-If the data changes, things will automatically update! 
-The data for this homework has been imported as `mtg.feather` under the `data/` directory at the top-level of this repository. 
-In order to ensure your local copy of the repo has the actual data (instead of just the `mtg.feather.dvc` stub-file), you need to run `dvc pull`
+Run `dvc pull` to ensure my local copy of the repo has the actual data
 
 ```{code-cell} ipython3
 !dvc pull
 ```
 
-Then you may load the data into your notebooks and scripts e.g. using pandas+pyarrow:
+Load the data using pandas+pyarrow:
 
 ```{code-cell} ipython3
-import pandas as pd
-(pd.read_feather('../../../data/mtg.feather')
- .head()[['name','text', 'mana_cost', 'flavor_text','release_date', 'edhrec_rank']]  
-)
+df = pd.read_feather('../../../data/mtg.feather')
+df.head()[['name','text', 'mana_cost', 'flavor_text','release_date', 'edhrec_rank']]
 ```
-
-But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display. 
-
-+++
 
 ### Submission Structure
 You will need to submit a pull-request on DagsHub with the following additions: 
@@ -91,6 +70,56 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
     3. Once you have names, create a _Dynamic Topic Model_ by following [their documentation](https://maartengr.github.io/BERTopic/getting_started/topicsovertime/topicsovertime.html). Use the `release_date` column as timestamps. 
     4. Describe what you see, and any possible issues with the topic models BERTopic has created. **This is the hardest part... interpreting!**
 
+```{code-cell} ipython3
+# Load the BERTopic model
+ft_model = BERTopic.load("ft_model")
+```
+
+```{code-cell} ipython3
+# Visualize topics
+ft_model.visualize_topics(top_n_topics = 9)
+```
+
+![dt_model.png](attachment:dt_model.png)
+
++++
+
+Topic 1: kami <br>
+Topic 2: goblin <br>
+Topic 3: wildspeaker <br>
+Topic 4: dragon <br>
+Topic 5: shadow <br>
+Topic 6: gerrard <br>
+Topic 7: mage <br>
+Topic 8: temper <br>
+
+```{code-cell} ipython3
+# Prepare data
+df_notna = df.dropna(subset=["flavor_text", "release_date"])
+docs = df_notna.flavor_text.to_list()
+timestamps = df_notna.release_date.to_list()
+```
+
+```{code-cell} ipython3
+# Train a BERTopic model
+topic_model = BERTopic(verbose=True)
+topics, probs = topic_model.fit_transform(docs)
+```
+
+```{code-cell} ipython3
+topics_over_time = topic_model.topics_over_time(docs, topics, timestamps)
+```
+
+```{code-cell} ipython3
+topic_model.visualize_topics_over_time(topics_over_time, top_n_topics=9)
+```
+
+![topics_over_time.png](attachment:topics_over_time.png)
+
++++
+
+
+
 +++
 
 ## Part 2 Supervised Classification
@@ -110,9 +139,9 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - load both models and plot the _confusion matrix_ for each model ([see here for the multilabel-specific version](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html))
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
 
+```{code-cell} ipython3
 
-
-+++
+```
 
 ## Part 3: Regression?
 

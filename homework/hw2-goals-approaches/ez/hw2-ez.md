@@ -223,18 +223,35 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import multilabel_confusion_matrix
 ```
 
+```{code-cell} ipython3
+# Load the multilabel model
+multilabel_model = pickle.load(open("multilabel.sav", 'rb'))
+```
+
 Preprocessing:
-- Remove NAs in column _flavor_text_, _text_, and _color_identity_
 - min_df = 5, ignore rare words (appear in less than 5 documents)
 - max_df = 0.8, ignore common words (appear in more than 80% of documents)
 - Transform _color_identity_ into lowecase
 
 ```{code-cell} ipython3
+# Instantiate OneVsRestClassifier
+multilabel_model = OneVsRestClassifier(SVC(kernel="linear"))
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
+
+# Fit OneVsRestClassifier
+multilabel_model.fit(X_train, y_train)
+```
+
+```{code-cell} ipython3
+# Save the model using pickle
+pickle.dump(multilabel_model, open("multilabel.sav", 'wb'))
+```
+
+```{code-cell} ipython3
 # Load the data
 df = pd.read_feather("../../../data/mtg.feather")
-
-# Remove NAs
-df = df.dropna(subset = ["flavor_text", "text", "color_identity"]).reset_index(drop=True)
 ```
 
 ```{code-cell} ipython3
@@ -256,25 +273,13 @@ y = cv.fit_transform(ci)
 ```
 
 ```{code-cell} ipython3
-# Instantiate OneVsRestClassifier
-multilabel_model = OneVsRestClassifier(SVC(kernel="linear"))
-
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
-
-# Fit OneVsRestClassifier
-multilabel_model.fit(X_train, y_train)
-```
-
-```{code-cell} ipython3
-# Save the model using pickle
-pickle.dump(multilabel_model, open("multilabel.sav", 'wb'))
-```
-
-```{code-cell} ipython3
 y_pred = multilabel_model.predict(X_test)
 multilabel_confusion_matrix(y_test, y_pred)
 ```
+
+The multiclass model performs well for certain labels but not all of them. However, the multilabel model reaches an overall high accuracy.
+
++++
 
 ## Part 3: Regression?
 

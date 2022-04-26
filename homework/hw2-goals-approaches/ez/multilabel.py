@@ -14,9 +14,6 @@ from sklearn.multiclass import OneVsRestClassifier
 # Load the data
 df = pd.read_feather("../../../data/mtg.feather")
 
-# Remove NAs
-df = df.dropna(subset = ["flavor_text", "text", "color_identity"]).reset_index(drop=True)
-
 # X
 tfidf = TfidfVectorizer(
     min_df=5, # ignore rare words (appear in less than 5 documents)

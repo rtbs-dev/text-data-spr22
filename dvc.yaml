@@ -12,3 +12,10 @@ stages:
   multilabel_model:
     cmd: '" -d" multilabel.py -d "../../../data/mtg.feather -o" multilabel_model.sav
       " python" multilabel.py ../../../data/mtg.feather'
+  reg_model:
+    cmd: python rank_model.py ../../../data/mtg.feather
+    deps:
+    - ../../../data/mtg.feather
+    - rank_model.py
+    outs:
+    - reg_model.sav

@@ -42,4 +42,4 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
 multiclass_model.fit(X_train, y_train)
 
 # Save the model using pickle
-pickle.dump(multiclass_model, open('multiclass_model.sav', 'wb'))
+pickle.dump(multiclass_model, open("multiclass.sav", 'wb'))

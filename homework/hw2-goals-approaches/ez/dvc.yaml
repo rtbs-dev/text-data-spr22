@@ -6,3 +6,9 @@ stages:
     - topic_model.py
     outs:
     - ft_model
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+    - multiclass.py
+    outs:
+    - multiclass.sav

@@ -1,0 +1,14 @@
+stages:
+  topic-model:
+    cmd: python topic_model.py ../../../data/mtg.feather
+    deps:
+    - ../../../data/mtg.feather
+    - topic_model.py
+    outs:
+    - topic_model
+  multiclass_model:
+    cmd: '" -d" multiclass.py -d ../../../data/mtg.feather " -o" multiclass_model.sav
+      " python" multiclass.py ../../../data/mtg.feather'
+  multilabel_model:
+    cmd: '" -d" multilabel.py -d "../../../data/mtg.feather -o" multilabel_model.sav
+      " python" multilabel.py ../../../data/mtg.feather'

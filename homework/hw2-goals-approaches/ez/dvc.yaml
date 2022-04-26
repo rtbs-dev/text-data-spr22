@@ -12,3 +12,9 @@ stages:
     - multiclass.py
     outs:
     - multiclass.sav
+  multilabel:
+    cmd: python multilabel.py
+    deps:
+    - multilabel.py
+    outs:
+    - multilabel.sav

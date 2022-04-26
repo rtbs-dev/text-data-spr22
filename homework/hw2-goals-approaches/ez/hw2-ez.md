@@ -29,24 +29,6 @@ import warnings
 warnings.filterwarnings("ignore")
 ```
 
-```{code-cell} ipython3
-from bertopic import BERTopic
-```
-
-```{code-cell} ipython3
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-from sklearn.svm import LinearSVC
-import pickle
-```
-
-```{code-cell} ipython3
-import matplotlib.pyplot as plt
-from sklearn.metrics import plot_confusion_matrix
-```
-
 ### Data
 Run `dvc pull` to ensure my local copy of the repo has the actual data
 
@@ -83,6 +65,10 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
     2. Use the plot to come up with working "names" for each major topic, adjusting the _number_ of topics as necessary to make things more useful. 
     3. Once you have names, create a _Dynamic Topic Model_ by following [their documentation](https://maartengr.github.io/BERTopic/getting_started/topicsovertime/topicsovertime.html). Use the `release_date` column as timestamps. 
     4. Describe what you see, and any possible issues with the topic models BERTopic has created. **This is the hardest part... interpreting!**
+
+```{code-cell} ipython3
+from bertopic import BERTopic
+```
 
 ```{code-cell} ipython3
 # Load the BERTopic model
@@ -167,10 +153,31 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - load both models and plot the _confusion matrix_ for each model ([see here for the multilabel-specific version](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html))
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
 
++++
+
+### Multiclass
+
+```{code-cell} ipython3
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.svm import LinearSVC
+import pickle
+import matplotlib.pyplot as plt
+from sklearn.metrics import plot_confusion_matrix
+```
+
 ```{code-cell} ipython3
 # Load the multiclass model
 multiclass_model = pickle.load(open("multiclass.sav", 'rb'))
 ```
+
+Preprocessing:
+- Remove NAs in column _flavor_text_, _text_, and _color_identity_
+- Remove multicolored _color_identity_
+- min_df = 5, ignore rare words (appear in less than 5 documents)
+- max_df = 0.8, ignore common words (appear in more than 80% of documents)
 
 ```{code-cell} ipython3
 # Load the data
@@ -207,15 +214,81 @@ plot_confusion_matrix(multiclass_model, X_test, y_test)
 plt.show()
 ```
 
+### Multilabel
+
+```{code-cell} ipython3
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.metrics import multilabel_confusion_matrix
+```
+
+Preprocessing:
+- Remove NAs in column _flavor_text_, _text_, and _color_identity_
+- min_df = 5, ignore rare words (appear in less than 5 documents)
+- max_df = 0.8, ignore common words (appear in more than 80% of documents)
+- Transform _color_identity_ into lowecase
+
+```{code-cell} ipython3
+# Load the data
+df = pd.read_feather("../../../data/mtg.feather")
+
+# Remove NAs
+df = df.dropna(subset = ["flavor_text", "text", "color_identity"]).reset_index(drop=True)
+```
+
+```{code-cell} ipython3
+# X
+tfidf = TfidfVectorizer(
+    min_df=5, # ignore rare words (appear in less than 5 documents)
+    max_df=0.8, # ignore common words (appear in more than 80% of documents)
+    stop_words="english"
+)
+text = df["text"] + df["flavor_text"].fillna('')
+X = tfidf.fit_transform(text)
+```
+
+```{code-cell} ipython3
+# y
+ci = df["color_identity"]
+cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+y = cv.fit_transform(ci)
+```
+
+```{code-cell} ipython3
+# Instantiate OneVsRestClassifier
+multilabel_model = OneVsRestClassifier(SVC(kernel="linear"))
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
+
+# Fit OneVsRestClassifier
+multilabel_model.fit(X_train, y_train)
+```
+
+```{code-cell} ipython3
+# Save the model using pickle
+pickle.dump(multilabel_model, open("multilabel.sav", 'wb'))
+```
+
+```{code-cell} ipython3
+y_pred = multilabel_model.predict(X_test)
+multilabel_confusion_matrix(y_test, y_pred)
+```
+
 ## Part 3: Regression?
 
 > Can we predict the EDHREC "rank" of the card using the data we have available? 
 
-- Like above, add a script and dvc stage to create and train your model
-- in the notebook, aside from your descriptions, plot the `predicted` vs. `actual` rank, with a 45-deg line showing what "perfect prediction" should look like. 
+- Like above, add a script and dvc stage to create and train your model.
+- In the notebook, aside from your descriptions, plot the `predicted` vs. `actual` rank, with a 45-deg line showing what "perfect prediction" should look like. 
 - This is a freeform part, so think about the big picture and keep track of your decisions: 
     - what model did you choose? Why? 
     - What data did you use from the original dataset? How did you proprocess it? 
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
+
+```{code-cell} ipython3
+
+```

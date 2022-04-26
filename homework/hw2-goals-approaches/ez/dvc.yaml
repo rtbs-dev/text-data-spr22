@@ -1,0 +1,8 @@
+stages:
+  topic-model:
+    cmd: python topic_model.py
+    deps:
+    - ../../../data/mtg.feather
+    - topic_model.py
+    outs:
+    - ft_model

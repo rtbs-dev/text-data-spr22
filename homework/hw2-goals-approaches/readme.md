@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.11.5
+    jupytext_version: 1.13.8
 kernelspec:
-  display_name: Python [conda env:text-data-class]
+  display_name: Python 3
   language: python
-  name: conda-env-text-data-class-py
+  name: python3
 ---
 
 # Homework: Goals & Approaches
@@ -33,8 +33,6 @@ In fact, you will likely be unable to create a set of ML algorithms that "beat" 
 However, to answer the three questions above, we need a way to explicitly track our decisions to use others' work, and efficiently _swap out_ that work for new ideas and directions as the need arises. 
 
 This homework is a "part 1" of sorts, where you will construct several inter-related pipelines in a way that will allow _much easier_ adjustment, experimentation, and measurement in "part 2"
-
-
 
 +++
 
@@ -64,7 +62,7 @@ import pandas as pd
 )
 ```
 
-But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display. 
+But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display.
 
 +++
 
@@ -109,8 +107,6 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - Describe:  preprocessing steps (the tokenization done, the ngram_range, etc.), and why. 
     - load both models and plot the _confusion matrix_ for each model ([see here for the multilabel-specific version](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html))
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
-
-
 
 +++
 

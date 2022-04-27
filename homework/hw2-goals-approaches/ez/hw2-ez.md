@@ -294,6 +294,34 @@ The multiclass model performs well for certain labels but not all of them. Howev
     
 How did you do? What would you like to try if you had more time?
 
++++
+
+Regression <br>
+X:
+- color_identity
+- converted_mana_cost
+- keywords
+- power
+- rarity
+- toughness
+
++++
+
+Preprocessing:
+- Remove NAs in column _edhrec_rank_
+
+```{code-cell} ipython3
+# Load the data
+df = pd.read_feather("../../../data/mtg.feather")
+
+# Remove NAs
+df = df.dropna(subset = ["edhrec_rank"]).reset_index(drop=True)
+```
+
+```{code-cell} ipython3
+df.head(2)
+```
+
 ```{code-cell} ipython3
 
 ```

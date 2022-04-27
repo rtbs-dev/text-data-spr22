@@ -1,0 +1,26 @@
+stages:
+  topic-model:
+    cmd: python topic_model.py
+    deps:
+    - topic_model.py
+    outs:
+    - flavor_text_topics
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+    - multiclass.py
+    outs:
+    - multiclass.sav
+  multilabel:
+    cmd: python multilabel.py
+    deps:
+    - multilabel.py
+    outs:
+    - multilabel.sav
+  regression:
+    cmd: python regression.py
+    deps:
+    - regression.py
+    outs:
+    - regression_elasticnet.sav
+    - regression_lasso.sav

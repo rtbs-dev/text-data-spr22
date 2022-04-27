@@ -11,6 +11,15 @@
 #     
 # How did you do? What would you like to try if you had more time?
 
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+
 def regression(seed=2022):
     """
     Prepares MTG data (X, y) and exports regression model using ElasticNetCV

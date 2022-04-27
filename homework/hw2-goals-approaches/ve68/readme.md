@@ -71,7 +71,7 @@ You will need to submit a pull-request on DagsHub with the following additions:
 - any updates to `environment.yml` to add the dependencies you want to use for this homework
 
 ```{code-cell} ipython3
-# Load scikit-learn model
+# Load scikit-learn models
 import pickle
 
 # Processing
@@ -148,6 +148,18 @@ topics_over_time = ft_topic_model.topics_over_time(df_ft_rd['flavor_text'], topi
 ft_topic_model.visualize_topics_over_time(topics_over_time, top_n_topics=20)
 ```
 
+### Topics Over Time Discussion
+
+In this plot of trend lines, the top 20 topics, among the 1000, are displayed from the last 90s to now. These topics have the highest frequency, which I believe to mean the highest cumulative frequency over the entire time period.
+
+In the trends, there are three glaring spikes in the trends for the following topics: Sarpadian [Empire] in green, Necromancy in yellow, and the Kamigawa [Plane]. According to these spikes, these topics became fairly common among flavor text of MTG cards. Since flavor text is optional to a card, I believe that these topics were fairly heavy lore, possibly due to popularity among MTG players.
+
+Beyond these topics, all other top topics do not breach a frequency value of 10. The only shared feature among these trend lines are that they seem to spike at different periods. Due to the number of topics, it is difficult to parse out exact topics and where they spike, but generally it seems that topics have not been as heavily skewed towards a single topic after the 2010s.
+
+It would be interesting to see a random draw of topics lines that included top topics, mid-topics, and bottom-topics for comparison.
+
++++
+
 ## Part 2: Supervised Classification
 
 Using only the `text` and `flavor_text` data, predict the color identity of cards: 
@@ -189,16 +201,52 @@ import seaborn as sns
 multiclass_model = pickle.load(open('multiclass.sav', 'rb'))
 ```
 
+### Pre-Processing Details
+
+First, I concatenate text and flavor text into a single 'document'. This requires me to fill NA observations of flavor text with a blank string to ensure proper concatenation.
+
+Next, I convert this text into a TF-IDF frequency, resulting a highly dimensional and sparse matrix. For this conversion, I use the following parameters:
+* min_df=5: Require n-gram to appear in at least 5 documents
+* tokenizer=LemmaTokenizer(): Convert n-grams to their base forms. I am unsure what happens for n == 2. Are both pieces lemmatized or is neither?
+* ngram_range=(1,2): Range of n-grams is 1 and 2 for the TF-IDF
+* stop_words='english': Exclude classic English stop words from TF-IDF.
+
+LemmaTokenizer() induced this warning: Tokenizing the stop words generated tokens ['ha', 'le', 'u', 'wa'] not in stop_words. It's possible that non-words exist in my TF-IDF due to LemmaTokenizer().
+
+These Pre-Processing steps are completed in multiclass.py and multilabel.py.
+
+```{code-cell} ipython3
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+```
+
 ```{code-cell} ipython3
 # Prepare Multiclass Model Features for Predictions on Test Set
 text = df['text'] + df['flavor_text'].fillna('')
 
 tfidf = TfidfVectorizer(
     min_df=5, 
+    tokenizer=LemmaTokenizer(),
+    ngram_range=(1,2),
     stop_words='english')
 
 X_tfidf = tfidf.fit_transform(text)
 ```
+
+### Pre-Processing for Dependent Variable
+
+Color identity is a list of 'colors' of length minimum 1. For multiclass prediction, I require only color identity and reclassify lists with multiple color identity into a single aggregate category.
+
+For example, [W] becomes 'W' and [G, R, U, W] AND [G, R] become a single category.
+
+Models are loaded and predicted upon the test set. The test set is identical to test sets created in the ML scripts. The ML models never train on test data assuming the seed and other parameters are consistent between each script and this notebook.
+
+I did attempt to split out data preparation into its own step before multiclass.py and multilabel.py but it seemed unnecessary to create intermediate data steps.
 
 ```{code-cell} ipython3
 # Preprocess Output for Multiclass Prediction
@@ -225,13 +273,21 @@ plt.xlabel('Predicted')
 plt.show()
 ```
 
+### Multiclass Confusion Matrix Discussion
+
+In the Multiclass prediction, there does seem to be fairly accurate results with predictions matching actual values in 4-digit amounts, whereas false predictions are relatively low in account, maxing out 19.
+
+Instructions indicated that multi-color identity observation should be unlabelled and in my interpretation this could either mean not labelled as a single color identity or not labelled and not included in data. I decided that creating a multi-color identity category would be beneficial for my model as it would increase the amount of data to train upon.
+
+Alternative to the confusion matrix, ROC curves for each class is another avenue of evaluation that I have so far been unsucessful in implementing.
+
 ```{code-cell} ipython3
 # Load Multilabel Model
 multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
-# Preprocess Output for Multilabel Prediction
+# Preprocess Output for Multilabel Prediction (CountVectorizer for Binarizer)
 cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
 y_ml = cv.fit_transform(ci)
 
@@ -283,6 +339,30 @@ for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, cv.get_feature_names_out
 fig.tight_layout()
 plt.show()
 ```
+
+```{code-cell} ipython3
+for i in range(0, len(cf_ml)):
+    cm = cf_ml[i]
+    
+    true_pos = np.diag(cm)
+    false_pos = np.sum(cm, axis=0) - true_pos
+    false_neg = np.sum(cm, axis=1) - true_pos
+    
+    print(f"Precision-Recall of {cv.get_feature_names_out()[i]}")
+    print(f"Precision: {round(np.mean(true_pos / (true_pos + false_pos)),2)}")
+    print(f"Recall   : {round(np.mean(true_pos / (true_pos + false_neg)),2)}")
+    print("\n")
+```
+
+### Multilabel Confusion Matrix Discussion
+
+In the Multiclass prediction, there does seem to be fairly accurate results with predictions matching actual values for both True Positve and Negative and low amounts of False Positve and Negative, around 2-3 digits.
+
+While the confusion matrix is a useful visualization, values of precision and recall provide a metric of comparison that is simpler and normalized. From calculating the mean of each class (True/False) for each label, we can see relatively high values close to 1 for each label. This is reflected well against the confusion matrices that we visualized.
+
+Additionally, compared to an earlier version of the TF-IDF vectorizer results are much better. In a simpler TF-IDF vectorizer with ngram_range=1 and a non-LemmaTokenizer(), the False Positive and Negative rates were much higher with values in the hundreds, nearing 1000 for some labels.
+
++++
 
 ## Part 3: Regression
 
@@ -378,6 +458,14 @@ print(f"# Non-Zero Features in ElasticNet: {np.count_nonzero(elasticnet_model.co
 print(f"# Non-Zero Features in LASSO: {np.count_nonzero(lasso_model.coef_)}")
 ```
 
-```{code-cell} ipython3
+### Regression Discussion
 
-```
+I decided to start with the text + flavor text data that I had already used before. I had attempted to attach data to the features, but failed to merge data to the sparse matrix produced by the TF-IDF vectorizer. For example, mana cost seemed like it could be a valuable addition to this prediction. Since this is a text-as-data course, I wanted to continue using primarily text + flavor text. I had tried applying LemmaTokenizer() for this portion as well, but failed due to an error related to dimensional mismatch.
+
+For this portion, I used two regression models ElasticNet and Lasso. Both these models incorporate regularization, which I believe to valuable for the highly dimensional data. I actually tried ElasticNet and ElasticNetCV (with cv=5), but both models yielded the same results while ElasticNetCV ran for much longer time without added benefits.
+
+For ElasticNet, predicted values of EDHREC rank were unfortunately bounded to a narrow range and wasn't feasible for interpretation. 
+
+By contrast, LASSO predicted values appropriate to the actual ranks, but predicted outside the realistic range (negative numbers and ranks greater than 25000). LASSO provided a more valuable model, but has a high variance and is skewed from perfect accuracy. While grouping by 'Block' could provide some insight, there doesn't seem to be structural bias due to the amount of noise excluding the (red/orange blocks).
+
+Interestingly, in comparing ElasticNet and LASSO, ElasticNet has less features than LASSO but yielded worse results. Since ElasticNet results are poor, I don't feel like there an appropriate comparison without looking at specific features. An interesting visualization could be logistic weights 'over time' as features are dropped out, but there are far too many features to create a manageable visualization.

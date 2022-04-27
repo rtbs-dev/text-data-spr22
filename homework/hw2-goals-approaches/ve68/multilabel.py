@@ -12,6 +12,15 @@
 # #### Reference
 # https://towardsdatascience.com/multi-label-text-classification-with-scikit-learn-30714b7819c5
 
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+
 def multilabel(seed=2022):
     """
     Prepares MTG data (X, y) and exports multilabel model using LinearSVC
@@ -31,11 +40,12 @@ def multilabel(seed=2022):
 
     text = df['text'] + df['flavor_text'].fillna('')
 
-    # Convert this into scikit-learn pipeline?
     tfidf = TfidfVectorizer(
         min_df=5, 
+        tokenizer=LemmaTokenizer(),
+        ngram_range=(1,2),
         stop_words='english')
-
+    
     X_tfidf = tfidf.fit_transform(text)
 
     ci = df['color_identity']

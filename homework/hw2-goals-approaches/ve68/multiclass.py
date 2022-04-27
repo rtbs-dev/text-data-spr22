@@ -8,6 +8,15 @@
 # - Source code for pipelines
 #     - in `multiclass.py`, again load data and train a Pipeline that preprocesses the data and trains a multiclass classifier (`LinearSVC`), and saves the model pickel output once trained. target labels with more than one color should be _unlabeled_! 
 
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+
 def multiclass(seed=2022):
     """
     Prepares MTG data (X, y) and exports multiclass model using LinearSVC
@@ -28,8 +37,10 @@ def multiclass(seed=2022):
 
     tfidf = TfidfVectorizer(
         min_df=5, 
+        tokenizer=LemmaTokenizer(),
+        ngram_range=(1,2),
         stop_words='english')
-
+    
     X_tfidf = tfidf.fit_transform(text)
     
     ci = df['color_identity']

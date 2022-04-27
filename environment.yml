@@ -9,6 +9,7 @@ dependencies:
   - dvc
   - numpy
   - seaborn
+  - plotnine
   - scikit-learn
   - pandas
   - pyarrow

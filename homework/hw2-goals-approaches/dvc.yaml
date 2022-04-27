@@ -1,0 +1,34 @@
+stages:
+  topic-model:
+    cmd: python topic_model.py
+    deps:
+      - topic_model.py
+      - my_functions.py
+      - mtg.feather
+    # outs:
+    #   - my_model_embeddings
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+      - multiclass.py
+      - my_functions.py
+      - mtg.feather
+    outs:
+      - multiclass.pkl
+  multilabel:
+    cmd: python multilabel.py
+    deps:
+      - multilabel.py
+      - mtg.feather
+      - my_functions.py
+    outs:
+      - multilabel.pkl
+  regression:
+    cmd: python regression.py
+    deps:
+      - mtg.feather
+      - my_functions.py
+    outs:
+      - regression.pkl
+
+

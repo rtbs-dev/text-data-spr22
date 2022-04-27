@@ -294,32 +294,93 @@ The multiclass model performs well for certain labels but not all of them. Howev
     
 How did you do? What would you like to try if you had more time?
 
-+++
+```{code-cell} ipython3
+from sklearn.linear_model import LinearRegression, Lasso
+```
 
-Regression <br>
-X:
-- color_identity
+I choose to perform a regression model, and feed in the following as X:
 - converted_mana_cost
-- keywords
 - power
-- rarity
 - toughness
-
-+++
-
-Preprocessing:
-- Remove NAs in column _edhrec_rank_
+- color_identity (create a dummy variable for each color)
+- keywords (create a dummy variable of whether the card has any keywords)
+- rarity (create a dummy variable for each rarity level)
 
 ```{code-cell} ipython3
 # Load the data
 df = pd.read_feather("../../../data/mtg.feather")
 
-# Remove NAs
+# Remove NAs in column edhrec_rank
 df = df.dropna(subset = ["edhrec_rank"]).reset_index(drop=True)
 ```
 
 ```{code-cell} ipython3
-df.head(2)
+# converted_mana_cost
+# convert to int
+df["converted_mana_cost"] = df["converted_mana_cost"].astype(int)
+```
+
+```{code-cell} ipython3
+# power
+# Replace NaN power with 0
+df["power"] = df["power"].fillna(0).astype(int)
+
+# toughness
+# Replace NaN toughness with 0
+df["toughness"] = df["toughness"].fillna(0).astype(int)
+```
+
+```{code-cell} ipython3
+# color_identity
+# Create a df for color_identity dummy variables
+colors = pd.get_dummies(df.color_identity.apply(pd.Series).stack()).sum(level=0)
+# Merge df with colors on index
+df = df.join(colors)
+# Replace NaN color_identity dummy variables with 0
+df[colors.columns] = df[colors.columns].fillna(0).astype(int)
+```
+
+```{code-cell} ipython3
+# keywords
+# no_keywords = 0 & yes_keywords = 1
+df["keywords"] = df["keywords"].isnull().astype(int)
+```
+
+```{code-cell} ipython3
+# rarity
+# Create a dummy variable for each rarity level
+df = pd.get_dummies(df, columns=["rarity"])
+```
+
+```{code-cell} ipython3
+df = df[['converted_mana_cost', 'power', 'toughness', 
+         'B', 'G', 'R', 'U', 'W', 'keywords', 
+         'rarity_rare', 'rarity_common', 'rarity_uncommon', 
+         'edhrec_rank']]
+```
+
+```{code-cell} ipython3
+y = df['edhrec_rank']
+X = df.drop('edhrec_rank', axis=1)
+```
+
+```{code-cell} ipython3
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
+```
+
+```{code-cell} ipython3
+# Fit LinearRegression
+linear = LinearRegression()
+linear.fit(X_train, y_train)
+linear.score(X_test, y_test)L
+```
+
+```{code-cell} ipython3
+# Fit Lasso
+lasso = Lasso()
+lasso.fit(X_train, y_train)
+lasso.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3

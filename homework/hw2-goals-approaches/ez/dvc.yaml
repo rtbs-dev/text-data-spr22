@@ -18,3 +18,10 @@ stages:
     - multilabel.py
     outs:
     - multilabel.sav
+  regression:
+    cmd: python regression.py
+    deps:
+    - regression.py
+    outs:
+    - linear.sav
+    - lasso.sav

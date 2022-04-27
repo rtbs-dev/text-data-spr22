@@ -1,0 +1,22 @@
+stages:
+  stage_one:
+    cmd: topic_model.py
+    deps:
+    - ../../../data/mtg.feather
+    - topic_model.py
+    outs:
+    - flav_text_model
+  multiclass:
+    cmd: multiclass.py
+    deps:
+    - multiclass.py
+    - ../../../data/mtg.feather
+    outs:
+    - multiclass_classifier.pickle
+  multilabel:
+    cmd: multilabel.py
+    deps:
+    - multilabel.py
+    - ../../../data/mtg.feather
+    outs:
+    - multilabel_classifier.pickle

@@ -1,0 +1,54 @@
+schema: '2.0'
+stages:
+  topic_model:
+    cmd: python topic_model.py ../../../data/mtg.feather
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: topic_model.py
+      md5: 1037656d3285d0c957e7bd9211feaaa1
+      size: 1746
+    outs:
+    - path: my_model
+      md5: 20b58121b1f5fd83211dde1d55cfb6f5
+      size: 293230609
+  multiclass:
+    cmd: python multiclass.py ../../../data/mtg.feather
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: multiclass.py
+      md5: 58a35be9cdc312c132a6c7ce6ac23df5
+      size: 1854
+    outs:
+    - path: mtg_classifier.pkl
+      md5: 5345b156c41db5a0407aeec4b8240954
+      size: 3548741
+  multilabel:
+    cmd: python multilabel.py ../../../data/mtg.feather
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: multilabel.py
+      md5: fc039968cccc6e1583a95ae023304ad3
+      size: 2259
+    outs:
+    - path: mtg_classifier_multilabel.pkl
+      md5: 4f2da93ea056972c36f21f7793cccf20
+      size: 12530018
+  regression:
+    cmd: python regression.py ../../../data/mtg.feather
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: regression.py
+      md5: 353fe49964b0891cfd541014131f0161
+      size: 3240
+    outs:
+    - path: regression.pkl
+      md5: 7b67ec3ee2fae0b4be7148bbfc577e95
+      size: 425674

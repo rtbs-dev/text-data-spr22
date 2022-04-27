@@ -1,0 +1,6 @@
+/my_model
+/mtg_classifier.pkl
+/mtg_classifier_multilabel.pkl
+/regression.pkl
+../../../shakespeare.txt
+../../../Shakespeare_data.csv

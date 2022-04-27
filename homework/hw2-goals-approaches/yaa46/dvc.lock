@@ -20,11 +20,11 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multiclass.py
-      md5: 58a35be9cdc312c132a6c7ce6ac23df5
-      size: 1854
+      md5: 63aaa9b78615df1237761b661aaba5bf
+      size: 1817
     outs:
     - path: mtg_classifier.pkl
-      md5: 5345b156c41db5a0407aeec4b8240954
+      md5: b5493d8be033ebd7730efdf4c449eb50
       size: 3548741
   multilabel:
     cmd: python multilabel.py ../../../data/mtg.feather
@@ -33,11 +33,11 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multilabel.py
-      md5: fc039968cccc6e1583a95ae023304ad3
-      size: 2259
+      md5: 58192ae035796380017afe1566e110ee
+      size: 2178
     outs:
     - path: mtg_classifier_multilabel.pkl
-      md5: 4f2da93ea056972c36f21f7793cccf20
+      md5: 9ed9fabe7490b0504cc86d7cf010f8f3
       size: 12530018
   regression:
     cmd: python regression.py ../../../data/mtg.feather

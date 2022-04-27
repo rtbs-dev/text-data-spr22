@@ -4,12 +4,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, recall_score, precision_score
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.preprocessing import MultiLabelBinarizer
 
 
 mtg = pd.read_feather('../../../data/mtg.feather')[["flavor_text", "text", "color_identity"]]
@@ -49,6 +46,8 @@ pipeline = Pipeline([
     ('clf', LinearSVC())
 ])
 
+multilabel_classifier = MultiOutputClassifier(pipeline, n_jobs=-1)
+
 # train test split
 X_train, X_test, y_train, y_test = train_test_split(text, mtg["color_identity"], test_size=0.2, random_state=42)
 
@@ -56,7 +55,6 @@ X_train, X_test, y_train, y_test = train_test_split(text, mtg["color_identity"],
 pipeline.fit(X_train, y_train)
 
 # score the pipeline
-
 pipeline.score(X_test, y_test)
 
 f1 = f1_score(y_test, pipeline.predict(X_test), average=None)

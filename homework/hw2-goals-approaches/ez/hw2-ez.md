@@ -307,6 +307,12 @@ I choose to perform a regression model, and feed in the following as X:
 - rarity (create a dummy variable for each rarity level)
 
 ```{code-cell} ipython3
+# Load the regression models
+linear_model = pickle.load(open("linear.sav", 'rb'))
+lasso_model = pickle.load(open("lasso.sav", 'rb'))
+```
+
+```{code-cell} ipython3
 # Load the data
 df = pd.read_feather("../../../data/mtg.feather")
 
@@ -370,17 +376,13 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
 ```
 
 ```{code-cell} ipython3
-# Fit LinearRegression
-linear = LinearRegression()
-linear.fit(X_train, y_train)
-linear.score(X_test, y_test)L
+# LinearRegression score
+linear_model.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3
-# Fit Lasso
-lasso = Lasso()
-lasso.fit(X_train, y_train)
-lasso.score(X_test, y_test)
+# Lasso score
+lasso_model.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3

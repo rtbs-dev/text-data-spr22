@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.11.5
+    jupytext_version: 1.13.8
 kernelspec:
   display_name: Python [conda env:text-data-class]
   language: python
@@ -80,8 +80,6 @@ ft_model = BERTopic.load("ft_model")
 ft_model.visualize_topics(top_n_topics = 9)
 ```
 
-![dt_model.png](attachment:dt_model.png)
-
 ```{code-cell} ipython3
 # Get topic information
 ft_model.get_topic_info()[2:10].set_index("Topic")
@@ -117,20 +115,12 @@ topics_over_time = topic_model.topics_over_time(docs, topics, timestamps)
 topic_model.visualize_topics_over_time(topics_over_time, top_n_topics=9)
 ```
 
-![topics_over_time.png](attachment:topics_over_time.png)
-
-+++
-
 Kami is the Japanese word for "great spirits." From the figure, we can see that the kami topic peaks around 2004, suggesting that there was probably an expansion set about kami released in 2004. After some research, I found out that *Champions of Kamigawa* was released in October 2004 as the first set in the Kamigawa block and it introduced many rare creatures with kami-like magics. I actually started playing mtg recently, and bought the *Kamigawa: Neon Dynasty* expansion set (released in February 2022) over the weekend. According to the storyline, this set represents the current era on Kamigawa, which is more than 1200 years after conclusion of the original Kamigawa block. If we excluded the 2004 kami outlier, we would probably see another smaller spike in 2022.
 
 ```{code-cell} ipython3
 # Visualize topics over time without the 'kami' outlier
 topic_model.visualize_topics_over_time(topics_over_time, topics=[0,1,3,4,5,6,7])
 ```
-
-![topics_over_time_no_kami-2.png](attachment:topics_over_time_no_kami-2.png)
-
-+++
 
 After removing the kami outlier from the figure, we can see that the goblin topic peaks arouund 2012, 2016 and 2022, suggesting that goblin cards probably have gained popularity, resulting in multiple goblin-related expansion sets released over the years. This makes great sense to me, because I think that goblin cards are pretty strong and personally love using them.
 
@@ -165,7 +155,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 import pickle
 import matplotlib.pyplot as plt
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay
 ```
 
 ```{code-cell} ipython3
@@ -210,7 +200,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
 ```
 
 ```{code-cell} ipython3
-plot_confusion_matrix(multiclass_model, X_test, y_test)  
+ConfusionMatrixDisplay.from_estimator(multiclass_model, X, y, display_labels=le.classes_)
+# plot_confusion_matrix(multiclass_model, X_test, y_test)  
 plt.show()
 ```
 
@@ -235,18 +226,18 @@ Preprocessing:
 
 ```{code-cell} ipython3
 # Instantiate OneVsRestClassifier
-multilabel_model = OneVsRestClassifier(SVC(kernel="linear"))
+# multilabel_model = OneVsRestClassifier(SVC(kernel="linear"))
 
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
 
 # Fit OneVsRestClassifier
-multilabel_model.fit(X_train, y_train)
+# multilabel_model.fit(X_train, y_train)
 ```
 
 ```{code-cell} ipython3
 # Save the model using pickle
-pickle.dump(multilabel_model, open("multilabel.sav", 'wb'))
+# pickle.dump(multilabel_model, open("multilabel.sav", 'wb'))
 ```
 
 ```{code-cell} ipython3
@@ -381,8 +372,23 @@ linear_model.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3
+plt.plot(y,y, color='k', ls='--')
+plt.scatter(y_test, linear_model.predict(X_test), alpha=0.5, s=1)
+
+plt.title('linear actual vs Pred. ')
+```
+
+```{code-cell} ipython3
 # Lasso score
 lasso_model.score(X_test, y_test)
+```
+
+```{code-cell} ipython3
+
+plt.plot(y,y, color='k', ls='--')
+plt.scatter(y_test, lasso_model.predict(X_test), alpha=0.5, s=1)
+
+plt.title('Lasso actual vs Pred. ')
 ```
 
 ```{code-cell} ipython3

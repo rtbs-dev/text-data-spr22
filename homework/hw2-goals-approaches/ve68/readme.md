@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.8
 kernelspec:
   display_name: Python [conda env:text-data-class]
   language: python
@@ -316,7 +316,7 @@ def print_confusion_matrix(confusion_matrix, axes, class_label, class_names, fon
     )
 
     try:
-        heatmap = sns.heatmap(df_cm, annot=True, fmt="d", cbar=False, ax=axes)
+        heatmap = sns.heatmap(df_cm, annot=True, fmt="d", cbar=False, ax=axes, square=True)
     except ValueError:
         raise ValueError("Confusion matrix values must be integers.")
         

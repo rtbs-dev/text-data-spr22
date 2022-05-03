@@ -2,24 +2,28 @@ stages:
   topic-model:
     cmd: python topic_model.py
     deps:
+    - ../../../data/mtg.feather
     - topic_model.py
     outs:
     - flavor_text_topics
   multiclass:
     cmd: python multiclass.py
     deps:
+    - ../../../data/mtg.feather
     - multiclass.py
     outs:
     - multiclass.sav
   multilabel:
     cmd: python multilabel.py
     deps:
+    - ../../../data/mtg.feather
     - multilabel.py
     outs:
     - multilabel.sav
   regression:
     cmd: python regression.py
     deps:
+    - ../../../data/mtg.feather
     - regression.py
     outs:
     - regression_elasticnet.sav

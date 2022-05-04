@@ -96,21 +96,27 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
 from bertopic import BERTopic
 import nltk
 
+# Import the topic model
+
 topic_model = BERTopic.load('flavor_model')
+
+# We need to recreate the probabilities and topics here, since they aren't saved with the model
 
 probs = topic_model.hdbscan_model.probabilities_
 topics = topic_model._map_predictions(topic_model.hdbscan_model.labels_)
 ```
 
 ```{code-cell} ipython3
+# Visualize!
+
 topic_model.visualize_topics()
 ```
 
 ```{code-cell} ipython3
-flavor = df['flavor_text'].to_list()
-```
+# Let's reduce the number of topics to 7, since we see approximately 7 topic clusters here.
 
-```{code-cell} ipython3
+flavor = df['flavor_text'].to_list()
+
 new_topics, new_probs = topic_model.reduce_topics(flavor, topics, nr_topics=7)
 ```
 
@@ -119,7 +125,23 @@ topic_model.visualize_topics()
 ```
 
 ```{code-cell} ipython3
+# Let's look at our new topics
+
 topic_model.get_topic_info()
+```
+
+## Topics
+1. Heaven/Earth
+2. Might
+3. Mortality
+4. Magic
+5. Predator/prey
+6. Swords
+7. Forests 
+
+```{code-cell} ipython3
+new_topics = pd.DataFrame(new_topics)
+new_topics = new_topics[0] > -1
 ```
 
 ```{code-cell} ipython3

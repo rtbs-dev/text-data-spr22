@@ -53,7 +53,7 @@ X_train_tfidf, tfidf_vectorizer = tfidf(X_train)
 # -
 
 clf = linear_model.Lasso(alpha=0.1)
-clf.fit(X_train_tfidf, y)
+clf.fit(X_train_tfidf, y_train)
 
 # +
 import pickle

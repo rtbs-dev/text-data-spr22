@@ -1,0 +1,13 @@
+stages:
+  multiclass:
+    cmd: python multiclass_pipe.py
+    deps:
+      - multiclass_pipe.py
+      - ../../../data/mtg.feather
+    outs:
+      - multiclass_example.sav
+    params:
+      - preprocessing.ngrams
+    metrics:
+      - metrics.json:
+          cache: false

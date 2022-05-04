@@ -1,0 +1,26 @@
+stages:
+  topic-model:
+    deps:
+      - topic_model.py
+      - mtg.feather
+    outs:
+      - flavor_text_topics
+  multiclass:
+    deps:
+      - multiclass.py
+      - mtg.feather
+    outs:
+      - multiclass_model.sav
+  multilabel:
+    deps:
+      - multilabel.py
+      - mtg.feather
+    out:
+      - multilabel_model.sav
+  regression:
+    deps:
+      - regression.py
+      - mtg.feather
+    out:
+      - regression_elasticnet_model.sav
+      - regression_lasso_model.sav

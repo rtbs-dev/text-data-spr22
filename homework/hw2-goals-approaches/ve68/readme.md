@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.8
+    jupytext_version: 1.13.6
 kernelspec:
   display_name: Python [conda env:text-data-class]
   language: python
@@ -183,7 +183,7 @@ import pickle
 
 # Processing
 from sklearn import preprocessing
-from sklearn.feature_extraction.text import TfidfVectorizer
+t
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 
@@ -352,6 +352,117 @@ for i in range(0, len(cf_ml)):
     print(f"Precision: {round(np.mean(true_pos / (true_pos + false_pos)),2)}")
     print(f"Recall   : {round(np.mean(true_pos / (true_pos + false_neg)),2)}")
     print("\n")
+```
+
+```{code-cell} ipython3
+# Load Multilabel Model
+# multilabel_model_proba = pickle.load(open('multilabel_proba.sav', 'rb'))
+```
+
+```{code-cell} ipython3
+# Predict Multilabel Classification Predictions
+# y_ml_pred_proba = multilabel_model_proba.predict_proba(X_test)
+```
+
+## Pipeline Experimentation
+
+```{code-cell} ipython3
+df = pd.read_feather("../../../data/mtg.feather")
+small_df = df.sample(1000)
+X = small_df[['text','flavor_text','color_identity']].fillna({'flavor_text':''})
+X['text_flavor_text'] = small_df['text'] + small_df['flavor_text'].fillna('')
+y = mlb.fit_transform(small_df['color_identity'])
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2022)
+```
+
+```{code-cell} ipython3
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+tfidf = TfidfVectorizer(
+    min_df=5, 
+    tokenizer=LemmaTokenizer(),
+    ngram_range=(1,2),
+    stop_words='english')
+
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
+multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+
+from sklearn.feature_extraction.text import CountVectorizer
+cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+
+from sklearn.pipeline import Pipeline
+from sklearn.pipeline import FeatureUnion
+
+pipeline = Pipeline([
+
+    # Use FeatureUnion to combine the features from subject and body
+    ('union', FeatureUnion(
+        transformer_list=[
+            # Pipeline for pulling features from the post's subject line
+            ('tft', Pipeline([
+                ('selector', ItemSelector('text_flavor_text')),
+                ('tfidf', tfidf),
+            ])),
+            
+            ('ci', Pipeline([
+                ('selector', ItemSelector('color_identity')),
+                ('cv', cv),
+            ])),
+            
+        ],
+    )),
+    # Use a SVC classifier on the combined features
+    ('svc', OneVsRestClassifier(SVC(kernel='linear'))),
+])
+
+pipeline.fit(X_train, y_train)
+
+## Notes:
+# Is there a way to selet the final 5 columns as my labels?
+```
+
+```{code-cell} ipython3
+pipeline.transform(X_train)
+```
+
+```{code-cell} ipython3
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+tfidf = TfidfVectorizer(
+    min_df=5, 
+    tokenizer=LemmaTokenizer(),
+    ngram_range=(1,2),
+    stop_words='english')
+
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
+multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+
+from sklearn.preprocessing import MultiLabelBinarizer
+mlb = MultiLabelBinarizer()
+
+from sklearn import compose, pipeline
+pipe = pipeline.make_pipeline(tfidf, multilabel_model)
+
+# Construct a TransformedTargetRegressor using this pipeline
+ttr = compose.TransformedTargetRegressor(regressor=pipe, transformer=mlb)
+
+ttr.fit(X_train, y_train)
 ```
 
 ### Multilabel Confusion Matrix Discussion

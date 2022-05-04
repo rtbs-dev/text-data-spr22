@@ -21,6 +21,7 @@ class LemmaTokenizer:
         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
 
+# +
 def multilabel(seed=2022):
     """
     Prepares MTG data (X, y) and exports multilabel model using LinearSVC
@@ -31,7 +32,7 @@ def multilabel(seed=2022):
     from sklearn import preprocessing
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.model_selection import train_test_split
-    from sklearn.svm import LinearSVC
+    from sklearn.svm import SVC
     from sklearn.multiclass import OneVsRestClassifier
 
     import pickle
@@ -56,11 +57,20 @@ def multilabel(seed=2022):
 
     X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state=seed)
     
-    multilabel_model = OneVsRestClassifier(LinearSVC(), n_jobs=1)
+    multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
     
     multilabel_model.fit(X_train, y_train)
     
     pickle.dump(multilabel_model, open('multilabel.sav', 'wb'))
+    
+#     multilabel_model_proba = OneVsRestClassifier(SVC(kernel='linear', probability=True))
+    
+#     multilabel_model_proba.fit(X_train, y_train)
+    
+#     pickle.dump(multilabel_model_proba, open('multilabel_proba.sav', 'wb'))
+
+
+# -
 
 if __name__ == "__main__":
     multilabel()

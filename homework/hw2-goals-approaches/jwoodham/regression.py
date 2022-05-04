@@ -13,6 +13,8 @@
 #     name: conda-env-text-data-class-py
 # ---
 
+# !cd
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn import linear_model
@@ -22,7 +24,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from nltk.tokenize import RegexpTokenizer
 
-df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather',
+df = (pd.read_feather('../../../data/mtg.feather',
                       columns = ['color_identity', 'converted_mana_cost', 'edhrec_rank', 'power', 'rarity', 'toughness', 'flavor_text']
      )).dropna()
 df

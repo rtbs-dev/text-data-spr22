@@ -58,11 +58,17 @@ Then you may load the data into your notebooks and scripts e.g. using pandas+pya
 ```{code-cell} ipython3
 import pandas as pd
 import numpy as np
-from sklearn.metrics import f1_score
-df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'colors', 'flavor_text','release_date', 'edhrec_rank']
-                     )
-                     ).dropna(subset=['flavor_text'])
+from bertopic import BERTopic
+import nltk
+import pickle
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import multilabel_confusion_matrix, ConfusionMatrixDisplay
+```
+
+```{code-cell} ipython3
+df = (pd.read_feather('../../../data/mtg.feather')
+     ).dropna(subset=['flavor_text'])
 ```
 
 But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display.
@@ -93,13 +99,12 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
     4. Describe what you see, and any possible issues with the topic models BERTopic has created. **This is the hardest part... interpreting!**
 
 ```{code-cell} ipython3
-from bertopic import BERTopic
-import nltk
-
 # Import the topic model
 
 topic_model = BERTopic.load('flavor_model')
+```
 
+```{code-cell} ipython3
 # We need to recreate the probabilities and topics here, since they aren't saved with the model
 
 probs = topic_model.hdbscan_model.probabilities_
@@ -113,14 +118,12 @@ topic_model.visualize_topics()
 ```
 
 ```{code-cell} ipython3
-# Let's reduce the number of topics to 7, since we see approximately 7 topic clusters here.
+# Let's reduce the number of topics to 7, since we see approximately 7 rough clusters.
 
 flavor = df['flavor_text'].to_list()
 
 new_topics, new_probs = topic_model.reduce_topics(flavor, topics, nr_topics=7)
-```
 
-```{code-cell} ipython3
 topic_model.visualize_topics()
 ```
 
@@ -130,26 +133,50 @@ topic_model.visualize_topics()
 topic_model.get_topic_info()
 ```
 
-## Topics
-1. Heaven/Earth
-2. Might
-3. Mortality
-4. Magic
-5. Predator/prey
-6. Swords
-7. Forests 
+### Topics
+1. Balduvia (https://mtg.fandom.com/wiki/Balduvia, https://mtg.fandom.com/wiki/LovisLiga_Coldeyes)
+2. Maritime
+3. Light/Dark
+4. Mortality
+5. Sword
+6. Goblins
+7. Predator/Prey
 
 ```{code-cell} ipython3
-new_topics = pd.DataFrame(new_topics)
-new_topics = new_topics[0] > -1
-```
+# Now we'll look at topics over time
 
-```{code-cell} ipython3
 timestamps = df.release_date.to_list()
 
 topics_over_time = topic_model.topics_over_time(flavor, new_topics, timestamps)
-topic_model.visualize_topics_over_time(topics_over_time)
+topic_model.visualize_topics_over_time(topics_over_time, topics = [0, 1, 2, 3, 4, 5, 6])
 ```
+
+If we look at topics over time it's a bit of a mess, though there are some jumps around 1995, and closer to 2020. There's a big jump around 1995 in the Balduvia topic, which corresponds with the release of the Ice Age set (https://mtg.fandom.com/wiki/Ice_Age). I assume that other similar spikes (though none happens over a broad a period of time) correspond with releases of themed sets. There also is a general rise in freuency of all themes after 2020. This may be related to an increase in sales and more cards being produced during the COVID-19 pandemic (https://wegotthiscovered.com/gaming/magic-gathering-revenues-significantly-2020-coronavirus-concerns/). This visualization looks at gross frequency though - what if we look at the relative importance of themes over time?
+
+```{code-cell} ipython3
+# Generate cards per release date
+
+counts = pd.DataFrame(df.release_date.value_counts())
+counts = counts.reset_index() 
+counts.columns = ['Timestamp', 'Count']
+```
+
+```{code-cell} ipython3
+# Merge with the topics_over_time dataframe and generate the frequency of a given topic relative to the number of cards released
+
+topics_over_time = topics_over_time.merge(counts, on='Timestamp')
+topics_over_time['Frequency'] = topics_over_time['Frequency'] / topics_over_time['Count']
+```
+
+```{code-cell} ipython3
+# Visualize relative frequency of topics over time
+
+topic_model.visualize_topics_over_time(topics_over_time, topics = [0, 1, 2, 3, 4, 5, 6])
+```
+
+Looking at relative importance of themes over time, we see some severe spikes (probably due to just a small number of cards released on a given day - it is unlikely that 100% of cards released in a set would be related to one topic. We still see the importance of Balduvia with the release of the Ice Age set in 1995, and a rise in the frequency of theme 5 (Goblins) in the past couple of years. In order to account for variance in how cards are released (with some dates only having one card releaesd and others having over 1,000), it may be useful to look at the importance of themes by month rather than by date of release. It's also interesting the topic 1 (Balduvia) seems to be the only one related to a specific fictional setting - I wonder if this is because BERTopic missed the others, other settings simply aren't as prominent, or if BERTopic combined them all within a fantasy setting topic (rather than a Balduvia topic). 
+
++++
 
 ## Part 2 Supervised Classification
 
@@ -169,7 +196,7 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
 
 ```{code-cell} ipython3
-import pickle
+# Load up the two models
 
 mcobject = open('multiclass_model.pkl', 'rb')
 mcmodel = pickle.load(mcobject)
@@ -179,89 +206,14 @@ mlmodel = pickle.load(mlobject)
 ```
 
 ```{code-cell} ipython3
-df1 = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+# Prep our data for predicted values
+
+df1 = (pd.read_feather('../../../data/mtg.feather', 
                       columns = ['name','text', 'color_identity','flavor_text', 'release_date']
                      )
                      ).dropna(subset=['color_identity', 'text', 'flavor_text'])
 
 df1['color_identity'] = df1.color_identity.where(df1.color_identity.str.len() == 1, np.nan)
-
-df1 = df1.dropna(subset=['color_identity'])
-
-y_true = df1.color_identity.apply(lambda x: x[0])
-```
-
-```{code-cell} ipython3
-y_pred = mcmodel.predict(df1['flavor_text'])
-```
-
-```{code-cell} ipython3
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-
-cm = confusion_matrix(y_true, y_pred, labels = mcmodel.classes_)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = mcmodel.classes_)
-
-disp.plot()
-plt.show()
-```
-
-```{code-cell} ipython3
-f1_score(y_true, y_pred, average='macro')
-```
-
-```{code-cell} ipython3
-f1_score(y_true, y_pred, average='micro')
-```
-
-```{code-cell} ipython3
-f1_score(y_true, y_pred, average='weighted')
-```
-
-```{code-cell} ipython3
-from sklearn.preprocessing import MultiLabelBinarizer
-
-df1 = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'color_identity','flavor_text', 'release_date']
-                     )
-                     ).dropna(subset=['color_identity', 'text', 'flavor_text'])
-```
-
-```{code-cell} ipython3
-y_pred = mlmodel.predict(df1['flavor_text'])
-```
-
-```{code-cell} ipython3
-mlb = MultiLabelBinarizer()
-y_true = mlb.fit_transform(df1['color_identity'])`
-```
-
-```{code-cell} ipython3
-mlb.classes_
-```
-
-```{code-cell} ipython3
-from sklearn.metrics import multilabel_confusion_matrix, ConfusionMatrixDisplay
-
-multilabel_confusion_matrix(y_true, y_pred)
-
-f, axes = plt.subplots(1, 5, figsize=(25, 15))
-axes = axes.ravel()
-for i in range(len(mlmodel.classes_)):
-    disp = ConfusionMatrixDisplay(confusion_matrix(y_true[:, i],
-                                                   y_pred[:, i]),
-                                  display_labels=[0, i])
-    disp.plot(ax=axes[i], values_format='.4g')
-    disp.ax_.set_title(f'class {mlb.classes_[i]}')
-    if i<10:
-        disp.ax_.set_xlabel('')
-    if i%5!=0:
-        disp.ax_.set_ylabel('')
-    disp.im_.colorbar.remove()
-
-plt.subplots_adjust(wspace=0.10, hspace=0.1)
-f.colorbar(disp.im_, ax=axes)
-plt.show()
 ```
 
 ## Part 3: Regression?
@@ -276,65 +228,3 @@ plt.show()
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
-
-```{code-cell} ipython3
-import pickle
-from nltk.tokenize import RegexpTokenizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-
-regobject = open('regression.pkl', 'rb')
-lasso= pickle.load(regobject)
-```
-
-```{code-cell} ipython3
-df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'color_identity', 'flavor_text','release_date', 'edhrec_rank']
-                     )
-                     ).dropna(subset=['name', 'text', 'color_identity', 'flavor_text', 'release_date', 'edhrec_rank'])
-
-df['flavor_text'] = df['flavor_text'].str.replace(r"[()-.,!?@\'\`\"\_\n]", " ")
-df['flavor_text'] = df['flavor_text'].str.lower()
-
-tokenizer = RegexpTokenizer(r'\w+')
-
-df['flavor'] = df['flavor_text'].apply(tokenizer.tokenize)
-
-df['flavor'] = df['flavor_text'].str.split(',').str.join(' ')
-
-X = df['flavor']
-y = df['edhrec_rank']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_state = 0)
-
-def tfidf(data):
-    tfidf_vectorizer = TfidfVectorizer()
-
-    train = tfidf_vectorizer.fit_transform(data)
-
-    return train, tfidf_vectorizer
-
-X_train_tfidf, tfidf_vectorizer = tfidf(X_train)
-X_test_tfidf = tfidf_vectorizer.transform(X_test)
-```
-
-```{code-cell} ipython3
-### NOT IDEAL, BUT NOT SURE HOW TO GET ONLY THE TEST DATA FROM THE MODEL FILE
-
-lasso.fit(X_train_tfidf, y_train)
-```
-
-```{code-cell} ipython3
-y_pred = lasso.predict(X_test_tfidf)
-```
-
-```{code-cell} ipython3
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots()
-plt.scatter(y_test, y_pred)
-plt.xlabel("True values")
-plt.ylabel("Predicted values")
-ax.axline((0,0), (max(y_test),max(y_test)), color='crimson')
-plt.show()
-```

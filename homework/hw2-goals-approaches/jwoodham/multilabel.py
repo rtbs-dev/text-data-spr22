@@ -26,7 +26,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 
-df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+df = (pd.read_feather('../../../data/mtg.feather', 
                       columns = ['name','text', 'color_identity','flavor_text', 'release_date']
                      )
                      ).dropna(subset=['name', 'color_identity', 'text', 'flavor_text', 'release_date'])

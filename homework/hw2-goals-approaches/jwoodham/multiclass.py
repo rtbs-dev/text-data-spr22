@@ -19,7 +19,7 @@ import numpy as np
 from bertopic import BERTopic
 from sklearn.model_selection import train_test_split
 
-df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+df = (pd.read_feather('../../../data/mtg.feather', 
                       columns = ['name','text', 'color_identity','flavor_text', 'release_date']
                      )
                      ).dropna(subset=['color_identity', 'text', 'flavor_text'])

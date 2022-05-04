@@ -19,7 +19,7 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 import janitor as pj
 from bertopic import BERTopic
-df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+df = (pd.read_feather('../../../data/mtg.feather', 
                       columns = ['name','text', 'colors', 'flavor_text','release_date', 'edhrec_rank']
                      )
                      ).dropna(subset=['flavor_text'])

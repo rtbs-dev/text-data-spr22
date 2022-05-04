@@ -17,4 +17,4 @@ dependencies:
     - datatest
     - coconut-develop[kernel]
     - bertopic
- 
+    - driconfig

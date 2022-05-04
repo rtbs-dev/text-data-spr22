@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.11.5
+    jupytext_version: 1.13.8
 kernelspec:
   display_name: Python [conda env:text-data-class]
   language: python
@@ -33,8 +33,6 @@ In fact, you will likely be unable to create a set of ML algorithms that "beat" 
 However, to answer the three questions above, we need a way to explicitly track our decisions to use others' work, and efficiently _swap out_ that work for new ideas and directions as the need arises. 
 
 This homework is a "part 1" of sorts, where you will construct several inter-related pipelines in a way that will allow _much easier_ adjustment, experimentation, and measurement in "part 2"
-
-
 
 +++
 
@@ -64,7 +62,7 @@ import pandas as pd
 )
 ```
 
-But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display. 
+But that's not all --- at the end of this homework, we will be able to run a `dvc repro` command and all of our main models and results will be made available for your _notebook_ to open and display.
 
 +++
 
@@ -97,7 +95,7 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
 
 Using only the `text` and `flavor_text` data, predict the color identity of cards: 
 
-Follow the sklearn documentation covered in class on text data and Pipelines to create a classifier that predicts which of the colors a card is identified as. 
+Follow the sklearn documentation covered in class on text data and [Pipelines](https://scikit-learn.org/stable/modules/compose.html#pipeline-chaining-estimators) to create a classifier that predicts which of the colors a card is identified as. 
 You will need to preprocess the target _`color_identity`_ labels depending on the task: 
 
 - Source code for pipelines
@@ -109,8 +107,6 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - Describe:  preprocessing steps (the tokenization done, the ngram_range, etc.), and why. 
     - load both models and plot the _confusion matrix_ for each model ([see here for the multilabel-specific version](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html))
     - Describe: what are the models succeeding at? Where are they struggling? How do you propose addressing these weaknesses next time?
-
-
 
 +++
 
@@ -126,3 +122,24 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
+
++++
+
+## Part 4: Iteration, Measurement, & Validation 
+
+> No model is perfect, and experimentation is key. How can we more easily iterate and validate our model? 
+
+- Pick **ONE** of your models above (regression, multilabel, or multiclass) that you want to improve or investigate, and calculate metrics of interest for them to go beyond our confusion matrix/predicted-actual plots: 
+    - for multiclass, report average and F1
+    - for multilabel, report an [appropriate metric](https://scikit-learn.org/stable/modules/model_evaluation.html#multilabel-ranking-metrics) (e.g. `ranking_loss`)
+    - for regression, report an [appropriate metric](https://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics) (e.g. 'MAPE' or MSE), **OR** since these are *ranks*, the [pearson correlation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.pearsonr.html) between predicted and actual may be more appropriate?
+- in the corresponding `dvc.yaml` stage for your model-of-interest, add `params` and `metrics`
+    - under `params`, pick a setting in your preprocessing (e.g. the `TfidfVecorizer`) that you want to change to imrpove your results. Set that param to your current setting, and have your model read from a `params.yaml` rather than directly writing it in your code. [^1]
+    - under `metrics`, reference your `metrics.json` and have your code _write_ the results as json to that file, rather than simply printing them or reporting them in the notebook. 
+- Run a _new experiment_ that 
+    
+[^1]: in production or bigger projects, consider using [`hydra`](https://hydra.cc/), [`driconfig`](https://dribia.github.io/driconfig/), or others like them to help manage .yaml and .toml settings files even better. 
+
+```{code-cell} ipython3
+> 
+```

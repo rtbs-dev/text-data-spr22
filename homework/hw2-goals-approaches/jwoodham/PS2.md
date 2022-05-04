@@ -57,8 +57,10 @@ Then you may load the data into your notebooks and scripts e.g. using pandas+pya
 
 ```{code-cell} ipython3
 import pandas as pd
+import numpy as np
+from sklearn.metrics import f1_score
 df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'mana_cost', 'flavor_text','release_date', 'edhrec_rank']
+                      columns = ['name','text', 'colors', 'flavor_text','release_date', 'edhrec_rank']
                      )
                      ).dropna(subset=['flavor_text'])
 ```
@@ -91,23 +93,40 @@ Investigate the [BERTopic](https://maartengr.github.io/BERTopic/index.html) docu
     4. Describe what you see, and any possible issues with the topic models BERTopic has created. **This is the hardest part... interpreting!**
 
 ```{code-cell} ipython3
-timestamps = df.release_date.to_list()
-flavor_text = df.flavor_text.to_list()
-topics = pd.read_csv('topics.csv')
-topics.columns = ['topics']
-topics = topics.topics.to_list()
-```
-
-```{code-cell} ipython3
 from bertopic import BERTopic
+import nltk
 
 topic_model = BERTopic.load('flavor_model')
-topic_model.visualize_topics(top_n_topics=10)
+
+probs = topic_model.hdbscan_model.probabilities_
+topics = topic_model._map_predictions(topic_model.hdbscan_model.labels_)
 ```
 
 ```{code-cell} ipython3
-topics_over_time = topic_model.topics_over_time(flavor_text, topics, timestamps)
-topic_model.visualize_topics_over_time(topics_over_time, top_n_topics=10)
+topic_model.visualize_topics()
+```
+
+```{code-cell} ipython3
+flavor = df['flavor_text'].to_list()
+```
+
+```{code-cell} ipython3
+new_topics, new_probs = topic_model.reduce_topics(flavor, topics, nr_topics=7)
+```
+
+```{code-cell} ipython3
+topic_model.visualize_topics()
+```
+
+```{code-cell} ipython3
+topic_model.get_topic_info()
+```
+
+```{code-cell} ipython3
+timestamps = df.release_date.to_list()
+
+topics_over_time = topic_model.topics_over_time(flavor, new_topics, timestamps)
+topic_model.visualize_topics_over_time(topics_over_time)
 ```
 
 ## Part 2 Supervised Classification
@@ -139,29 +158,15 @@ mlmodel = pickle.load(mlobject)
 
 ```{code-cell} ipython3
 df1 = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'mana_cost','flavor_text', 'release_date']
+                      columns = ['name','text', 'color_identity','flavor_text', 'release_date']
                      )
-                     ).dropna(subset=['mana_cost', 'text', 'flavor_text'])
+                     ).dropna(subset=['color_identity', 'text', 'flavor_text'])
 
-df1['card_num'] = df1.reset_index().index
+df1['color_identity'] = df1.color_identity.where(df1.color_identity.str.len() == 1, np.nan)
 
-df1 = df1.explode('mana_cost')
+df1 = df1.dropna(subset=['color_identity'])
 
-for i in range(10):
-    df1 = df1.loc[df1["mana_cost"] != str(i)]
-
-df1.mana_cost.value_counts()
-
-count = df1.groupby(['card_num'])['mana_cost'].count()
-count = pd.DataFrame(count)
-
-df1 = pd.merge(df1, count, how='left', on=['card_num'], validate = 'm:1')
-
-df1 = df1[(df1['mana_cost_y'] == 1)]
-
-df1 = df1[['name', 'text', 'mana_cost_x', 'flavor_text', 'release_date']]
-
-y_true = df1['mana_cost_x']
+y_true = df1.color_identity.apply(lambda x: x[0])
 ```
 
 ```{code-cell} ipython3
@@ -172,37 +177,45 @@ y_pred = mcmodel.predict(df1['flavor_text'])
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
-cm = confusion_matrix(y_true, y_pred)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+cm = confusion_matrix(y_true, y_pred, labels = mcmodel.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = mcmodel.classes_)
 
 disp.plot()
 plt.show()
 ```
 
 ```{code-cell} ipython3
+f1_score(y_true, y_pred, average='macro')
+```
 
+```{code-cell} ipython3
+f1_score(y_true, y_pred, average='micro')
+```
+
+```{code-cell} ipython3
+f1_score(y_true, y_pred, average='weighted')
 ```
 
 ```{code-cell} ipython3
 from sklearn.preprocessing import MultiLabelBinarizer
 
 df1 = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'mana_cost','flavor_text', 'release_date']
+                      columns = ['name','text', 'color_identity','flavor_text', 'release_date']
                      )
-                     ).dropna(subset=['mana_cost', 'text', 'flavor_text'])
+                     ).dropna(subset=['color_identity', 'text', 'flavor_text'])
+```
 
+```{code-cell} ipython3
 y_pred = mlmodel.predict(df1['flavor_text'])
-
-mlb = MultiLabelBinarizer(classes = ['B','C','G','R','S','U','W','X'])
-y_true = mlb.fit_transform(df1['mana_cost'])
 ```
 
 ```{code-cell} ipython3
-
+mlb = MultiLabelBinarizer()
+y_true = mlb.fit_transform(df1['color_identity'])`
 ```
 
 ```{code-cell} ipython3
-
+mlb.classes_
 ```
 
 ```{code-cell} ipython3
@@ -210,14 +223,14 @@ from sklearn.metrics import multilabel_confusion_matrix, ConfusionMatrixDisplay
 
 multilabel_confusion_matrix(y_true, y_pred)
 
-f, axes = plt.subplots(2, 4, figsize=(25, 15))
+f, axes = plt.subplots(1, 5, figsize=(25, 15))
 axes = axes.ravel()
-for i in range(8):
+for i in range(len(mlmodel.classes_)):
     disp = ConfusionMatrixDisplay(confusion_matrix(y_true[:, i],
                                                    y_pred[:, i]),
                                   display_labels=[0, i])
     disp.plot(ax=axes[i], values_format='.4g')
-    disp.ax_.set_title(f'class {i}')
+    disp.ax_.set_title(f'class {mlb.classes_[i]}')
     if i<10:
         disp.ax_.set_xlabel('')
     if i%5!=0:
@@ -241,3 +254,65 @@ plt.show()
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
+
+```{code-cell} ipython3
+import pickle
+from nltk.tokenize import RegexpTokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+
+regobject = open('regression.pkl', 'rb')
+lasso= pickle.load(regobject)
+```
+
+```{code-cell} ipython3
+df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+                      columns = ['name','text', 'color_identity', 'flavor_text','release_date', 'edhrec_rank']
+                     )
+                     ).dropna(subset=['name', 'text', 'color_identity', 'flavor_text', 'release_date', 'edhrec_rank'])
+
+df['flavor_text'] = df['flavor_text'].str.replace(r"[()-.,!?@\'\`\"\_\n]", " ")
+df['flavor_text'] = df['flavor_text'].str.lower()
+
+tokenizer = RegexpTokenizer(r'\w+')
+
+df['flavor'] = df['flavor_text'].apply(tokenizer.tokenize)
+
+df['flavor'] = df['flavor_text'].str.split(',').str.join(' ')
+
+X = df['flavor']
+y = df['edhrec_rank']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_state = 0)
+
+def tfidf(data):
+    tfidf_vectorizer = TfidfVectorizer()
+
+    train = tfidf_vectorizer.fit_transform(data)
+
+    return train, tfidf_vectorizer
+
+X_train_tfidf, tfidf_vectorizer = tfidf(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+```
+
+```{code-cell} ipython3
+### NOT IDEAL, BUT NOT SURE HOW TO GET ONLY THE TEST DATA FROM THE MODEL FILE
+
+lasso.fit(X_train_tfidf, y_train)
+```
+
+```{code-cell} ipython3
+y_pred = lasso.predict(X_test_tfidf)
+```
+
+```{code-cell} ipython3
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+plt.scatter(y_test, y_pred)
+plt.xlabel("True values")
+plt.ylabel("Predicted values")
+ax.axline((0,0), (max(y_test),max(y_test)), color='crimson')
+plt.show()
+```

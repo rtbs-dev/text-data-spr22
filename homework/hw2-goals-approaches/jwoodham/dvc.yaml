@@ -1,28 +1,17 @@
 stages:
   topic_model:
-    cmd: python topic_model.py
-    deps:
-      - mtg.feather
-      - topic_model.py
-    outs:
-      - flavor_model
-multiclass:
-  cmd: python multiclass.py
-  deps:
-    - multiclass.py
-    - mtg.feather
-  outs:
-    - muticlass.pkl
-multilabel:
-  cmd: python multilabel.py
-  deps:
-    - multilabel.py
-    - mtg.feather
-  outs:
-    - multilabel.pkl
-regression:
-  cmd: python regression.py
-  deps:
-    - mtg.feather
-  outs:
-    - regression.pkl
+    cmd: topic_model.py -d mtg.feather -dtopic_model.py -o flavor_model
+    params:
+    - python
+  multiclass:
+    cmd: multiclass.py -d multiclass.py mtg.feather -o multiclass.pkl
+    params:
+    - python
+  multilabel:
+    cmd: multilabel.py -d multilabel.py mtg.feather -o multilabel.pkl
+    params:
+    - python
+  regression:
+    cmd: regression.py -d mtg.feather -o regression.pkl
+    params:
+    - python

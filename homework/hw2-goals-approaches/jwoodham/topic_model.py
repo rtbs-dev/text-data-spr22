@@ -14,18 +14,28 @@
 # ---
 
 import pandas as pd
+import nltk
+from nltk.corpus import wordnet as wn
+from nltk.stem import WordNetLemmatizer
+import janitor as pj
 from bertopic import BERTopic
 df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
-                      columns = ['name','text', 'mana_cost', 'flavor_text','release_date', 'edhrec_rank']
+                      columns = ['name','text', 'colors', 'flavor_text','release_date', 'edhrec_rank']
                      )
                      ).dropna(subset=['flavor_text'])
 
 # +
 from bertopic import BERTopic
+from sklearn.feature_extraction.text import CountVectorizer
+from hdbscan import HDBSCAN
 
-topic_model = BERTopic()
+vectorizer_model = CountVectorizer(ngram_range=(1,1), stop_words="english")
 
-topics, probs = topic_model.fit_transform(df['flavor_text'].tolist())
+hdbscan_model = HDBSCAN(min_cluster_size=50)
+
+topic_model = BERTopic(nr_topics = 'auto', vectorizer_model = vectorizer_model, hdbscan_model=hdbscan_model)
+
+topics, probs = topic_model.fit_transform(df['flavor_text'].to_list())
 # -
 
 topic_model.get_topic_info()

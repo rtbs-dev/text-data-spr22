@@ -136,10 +136,17 @@ How did you do? What would you like to try if you had more time?
 - in the corresponding `dvc.yaml` stage for your model-of-interest, add `params` and `metrics`
     - under `params`, pick a setting in your preprocessing (e.g. the `TfidfVecorizer`) that you want to change to imrpove your results. Set that param to your current setting, and have your model read from a `params.yaml` rather than directly writing it in your code. [^1]
     - under `metrics`, reference your `metrics.json` and have your code _write_ the results as json to that file, rather than simply printing them or reporting them in the notebook. 
-- Run a _new experiment_ that 
+- commit your changes to your branch, run `dvc repro dvc.yaml` for your file, then run a _new experiment_ that changes that one parameter: e.g. `dvc exp run -S preprocessing.ngrams.largest=1` (see the `example/` folder for a complete working example). 
+
+Report the improvement/reduction in performance with the parameter change for your metric, whether by copy-pasting or using `!dvc exp diff` in the notebook, the results of `dvc exp diff`. 
     
 [^1]: in production or bigger projects, consider using [`hydra`](https://hydra.cc/), [`driconfig`](https://dribia.github.io/driconfig/), or others like them to help manage .yaml and .toml settings files even better. 
 
++++
+
+## Extra Credit (5 pts) 
+If you can, use a feature importance or model explanation technique like LIME to describe, _briefly_, why your model is behaving in the way it is. E.g. what spots in the text for a green card are leading to it's classification as _green_, or what features are useful to say what the regressor thinks the EDHREC Rank should be. 
+
 ```{code-cell} ipython3
-> 
+
 ```

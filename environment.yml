@@ -8,10 +8,12 @@ dependencies:
   - ipykernel
   - dvc
   - numpy
+  - nbformat
   - seaborn
   - scikit-learn
   - pandas
   - pyarrow
+  - pyjanitor
   - pip
   - pip:
     - datatest

@@ -1,0 +1,29 @@
+stages:
+  topic_model:
+    cmd: python topic_model.py
+    deps:
+    - ../../../data/mtg.feather
+    - topic_model.py
+    outs:
+    - flavor_model
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+    - ../../../data/mtg.feather
+    - multiclass.py
+    outs:
+    - multiclass_model.pkl
+  multilabel:
+    cmd: python multilabel.py
+    deps:
+    - ../../../data/mtg.feather
+    - multilabel.py
+    outs:
+    - multilabel_model.pkl
+  regression:
+    cmd: python regression.py
+    deps:
+    - ../../../data/mtg.feather
+    - regression.py
+    outs:
+    - regression.pkl

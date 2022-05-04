@@ -47,7 +47,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
 X, y = make_classification(n_features=4, random_state = 0)
-clf = make_pipeline(CountVectorizer(ngram_range=(1,3)),
+clf = make_pipeline(CountVectorizer(ngram_range=(ngrams["min"], ngrams["max"])),
                     TfidfTransformer(),
                     LinearSVC(random_state=0, tol=1e-05))
 # -
@@ -64,3 +64,10 @@ import pickle
 
 with open("multiclass_model.pkl", 'wb') as file:
     pickle.dump(clf, file)
+# -
+
+y_pred = clf.predict(X_test)
+
+metrics = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True))
+print(metrics)
+metrics["weighted avg"].to_json("metrics.json")

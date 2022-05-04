@@ -13,6 +13,11 @@ stages:
     - multiclass.py
     outs:
     - multiclass_model.pkl
+    params:
+      - preprocessing.ngrams
+    metrics:
+      - metrics.json:
+          cache: false
   multilabel:
     cmd: python multilabel.py
     deps:
@@ -27,3 +32,4 @@ stages:
     - regression.py
     outs:
     - regression.pkl
+

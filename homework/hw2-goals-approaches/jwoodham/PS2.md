@@ -64,6 +64,12 @@ import pickle
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import multilabel_confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
+from sklearn.preprocessing import MultiLabelBinarizer
+from nltk.tokenize import RegexpTokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+import json
 ```
 
 ```{code-cell} ipython3
@@ -205,8 +211,10 @@ mlobject = open('multilabel_model.pkl', 'rb')
 mlmodel = pickle.load(mlobject)
 ```
 
+### Multiclass Classification
+
 ```{code-cell} ipython3
-# Prep our data for predicted values
+# Prep our data - drop those with multiple color identities
 
 df1 = (pd.read_feather('../../../data/mtg.feather', 
                       columns = ['name','text', 'color_identity','flavor_text', 'release_date']
@@ -214,6 +222,64 @@ df1 = (pd.read_feather('../../../data/mtg.feather',
                      ).dropna(subset=['color_identity', 'text', 'flavor_text'])
 
 df1['color_identity'] = df1.color_identity.where(df1.color_identity.str.len() == 1, np.nan)
+
+df1 = df1.dropna(subset=['color_identity'])
+```
+
+```{code-cell} ipython3
+# Prepare true and predicted values
+
+y_true = df1.color_identity.apply(lambda x: x[0])
+y_pred = mcmodel.predict(df1['flavor_text'])
+```
+
+```{code-cell} ipython3
+# Confusion matrix!
+
+cm = confusion_matrix(y_true, y_pred, labels = mcmodel.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = mcmodel.classes_)
+
+disp.plot()
+plt.show()
+```
+
+### Multilabel Classification
+
+```{code-cell} ipython3
+# Prepare data and prep true aand predicted values
+
+df1 = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+                      columns = ['name','text', 'color_identity','flavor_text', 'release_date']
+                     )
+                     ).dropna(subset=['color_identity', 'text', 'flavor_text'])
+
+mlb = MultiLabelBinarizer()
+y_true = mlb.fit_transform(df1['color_identity'])
+y_pred = mlmodel.predict(df1['flavor_text'])
+```
+
+```{code-cell} ipython3
+from sklearn.metrics import multilabel_confusion_matrix, ConfusionMatrixDisplay
+
+multilabel_confusion_matrix(y_true, y_pred)
+
+f, axes = plt.subplots(1, 5, figsize=(30, 5))
+axes = axes.ravel()
+for i in range(len(mlmodel.classes_)):
+    disp = ConfusionMatrixDisplay(confusion_matrix(y_true[:, i],
+                                                   y_pred[:, i]),
+                                  display_labels=[0, i])
+    disp.plot(ax=axes[i], values_format='.4g')
+    disp.ax_.set_title(f'class {mlb.classes_[i]}')
+    if i<10:
+        disp.ax_.set_xlabel('')
+    if i%5!=0:
+        disp.ax_.set_ylabel('')
+    disp.im_.colorbar.remove()
+
+plt.subplots_adjust(wspace=0.10, hspace=0.1)
+f.colorbar(disp.im_, ax=axes)
+plt.show()
 ```
 
 ## Part 3: Regression?
@@ -228,3 +294,102 @@ df1['color_identity'] = df1.color_identity.where(df1.color_identity.str.len() ==
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
+
+```{code-cell} ipython3
+# Bring in regression model
+
+regobject = open('regression.pkl', 'rb')
+lasso= pickle.load(regobject)
+```
+
+```{code-cell} ipython3
+# Bring in data and prep for use in model
+
+df = (pd.read_feather('C:/Users/JeffW/text-data-spr22/data/mtg.feather', 
+                      columns = ['name','text', 'color_identity', 'flavor_text','release_date', 'edhrec_rank']
+                     )
+                     ).dropna(subset=['name', 'text', 'color_identity', 'flavor_text', 'release_date', 'edhrec_rank'])
+
+df['flavor_text'] = df['flavor_text'].str.replace(r"[()-.,!?@\'\`\"\_\n]", " ")
+df['flavor_text'] = df['flavor_text'].str.lower()
+
+tokenizer = RegexpTokenizer(r'\w+')
+
+df['flavor'] = df['flavor_text'].apply(tokenizer.tokenize)
+
+df['flavor'] = df['flavor_text'].str.split(',').str.join(' ')
+
+X = df['flavor']
+y_true = df['edhrec_rank']
+```
+
+```{code-cell} ipython3
+# TF-IDF for Lasso
+
+X_train, X_test, y_train, y_test = train_test_split(X, y_true, test_size=.3, random_state = 0)
+
+def tfidf(data):
+    tfidf_vectorizer = TfidfVectorizer()
+
+    train = tfidf_vectorizer.fit_transform(data)
+
+    return train, tfidf_vectorizer
+
+X_train_tfidf, tfidf_vectorizer = tfidf(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+```
+
+```{code-cell} ipython3
+# Ideally, I wouldn't be retraining the model here, but I'm having trouble with the dimensions.
+# From what I can figure out, either I include the whole sample when I develop the model and then just run it through again here, or I retrain it here to see if the model is generalizable.
+
+lasso.fit(X_train_tfidf, y_train)
+```
+
+```{code-cell} ipython3
+# Predicted values for y
+
+y_pred = lasso.predict(X_test_tfidf)
+```
+
+```{code-cell} ipython3
+# Visualize! Predicted ranking over actual ranking based on flavor text.
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+plt.scatter(y_test, y_pred)
+plt.xlabel("True values")
+plt.ylabel("Predicted values")
+ax.axline((0,0), (max(y_test),max(y_test)), color='crimson')
+plt.show()
+```
+
+## Part 4: Iteration, Measurement, & Validation 
+
++++
+
+> No model is perfect, and experimentation is key. How can we more easily iterate and validate our model? 
+
+- Pick **ONE** of your models above (regression, multilabel, or multiclass) that you want to improve or investigate, and calculate metrics of interest for them to go beyond our confusion matrix/predicted-actual plots: 
+    - for multiclass, report average and F1
+    - for multilabel, report an [appropriate metric](https://scikit-learn.org/stable/modules/model_evaluation.html#multilabel-ranking-metrics) (e.g. `ranking_loss`)
+    - for regression, report an [appropriate metric](https://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics) (e.g. 'MAPE' or MSE), **OR** since these are *ranks*, the [pearson correlation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.pearsonr.html) between predicted and actual may be more appropriate?
+- in the corresponding `dvc.yaml` stage for your model-of-interest, add `params` and `metrics`
+    - under `params`, pick a setting in your preprocessing (e.g. the `TfidfVecorizer`) that you want to change to imrpove your results. Set that param to your current setting, and have your model read from a `params.yaml` rather than directly writing it in your code. [^1]
+    - under `metrics`, reference your `metrics.json` and have your code _write_ the results as json to that file, rather than simply printing them or reporting them in the notebook. 
+- commit your changes to your branch, run `dvc repro dvc.yaml` for your file, then run a _new experiment_ that changes that one parameter: e.g. `dvc exp run -S preprocessing.ngrams.largest=1` (see the `example/` folder for a complete working example). 
+
+Report the improvement/reduction in performance with the parameter change for your metric, whether by copy-pasting or using `!dvc exp diff` in the notebook, the results of `dvc exp diff`. 
+    
+[^1]: in production or bigger projects, consider using [`hydra`](https://hydra.cc/), [`driconfig`](https://dribia.github.io/driconfig/), or others like them to help manage .yaml and .toml settings files even better. 
+
+```{code-cell} ipython3
+# F1 scores
+micro_F1 = f1_score(y_true, y_pred, average='macro')
+macro_F1 = f1_score(y_true, y_pred, average='micro')
+weighted_F1 = f1_score(y_true, y_pred, average='weighted')
+```
+
+## Extra Credit (5 pts) 
+If you can, use a feature importance or model explanation technique like LIME to describe, _briefly_, why your model is behaving in the way it is. E.g. what spots in the text for a green card are leading to it's classification as _green_, or what features are useful to say what the regressor thinks the EDHREC Rank should be.

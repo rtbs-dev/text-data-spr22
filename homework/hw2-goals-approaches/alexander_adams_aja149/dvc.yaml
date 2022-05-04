@@ -1,0 +1,29 @@
+stages:
+  stage_1:
+    cmd: topic_model.py mtg.feather > hw2_bert_model
+    deps:
+      - topic_model.py
+      - ../../../data/mtg.feather
+    outs:
+      - hw2_bert_model
+  stage_2a:
+    cmd: multiclass.py mtg.feather > multiclass_pipe.pkl
+    deps:
+      - multiclass.py
+      - ../../../data/mtg.feather
+    outs:
+      - multiclass_pipe.pkl
+  stage_2b:
+    cmd: multilabel.py mtg.feather > multilabel_pipe.pkl
+    deps:
+      - multilabel.py
+      - ../../../data/mtg.feather
+    outs:
+      - multilabel_pipe.pkl
+  stage_3:
+    cmd: rank_regression.py mtg.feather > regression_GridSearch.pkl
+    deps:
+      - rank_regression.py
+      - ../../../data/mtg.feather
+    outs:
+      - regression_GridSearch.pkl

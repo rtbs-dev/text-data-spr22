@@ -13,7 +13,7 @@ from sklearn import preprocessing
 
 def multiclass_model():
     '''
-    Runs and saves mutliclass (LinearSVC) model on magic the gathering flavor text data. 
+    Runs and saves mutliclass (LinearSVC) model on magic the gathering flavor text data.
     '''
     # Data Prep
     df = pd.read_feather('../../../data/mtg.feather')
@@ -50,6 +50,12 @@ def multiclass_model():
     multiclass_model.fit(X_train, y_train)
     pickle.dump(multiclass_model, open('multiclass_model.sav', 'wb'))
 
+result = multiclass_model.predict(X_test)
+import matplotlib.pyplot as plt
+from sklearn.metrics import plot_confusion_matrix
+plot_confusion_matrix(multiclass_model, X_test, y_test)
+
+plt.savefig('foo.png')
 
 if __name__ == "__main__":
     multilabel_model()

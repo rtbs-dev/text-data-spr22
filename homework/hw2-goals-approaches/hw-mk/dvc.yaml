@@ -21,6 +21,9 @@ stages:
     deps:
       - regression.py
       - mtg.feather
+    params:
+      - tfidf.min_df
+      - tfidf.ngram_range
     out:
       - regression_elasticnet_model.sav
       - regression_lasso_model.sav

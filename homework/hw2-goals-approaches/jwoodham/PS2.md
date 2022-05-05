@@ -65,10 +65,12 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import multilabel_confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MultiLabelBinarizer
 from nltk.tokenize import RegexpTokenizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
 import json
 ```
 
@@ -180,7 +182,7 @@ topics_over_time['Frequency'] = topics_over_time['Frequency'] / topics_over_time
 topic_model.visualize_topics_over_time(topics_over_time, topics = [0, 1, 2, 3, 4, 5, 6])
 ```
 
-Looking at relative importance of themes over time, we see some severe spikes (probably due to just a small number of cards released on a given day - it is unlikely that 100% of cards released in a set would be related to one topic. We still see the importance of Balduvia with the release of the Ice Age set in 1995, and a rise in the frequency of theme 5 (Goblins) in the past couple of years. In order to account for variance in how cards are released (with some dates only having one card releaesd and others having over 1,000), it may be useful to look at the importance of themes by month rather than by date of release. It's also interesting the topic 1 (Balduvia) seems to be the only one related to a specific fictional setting - I wonder if this is because BERTopic missed the others, other settings simply aren't as prominent, or if BERTopic combined them all within a fantasy setting topic (rather than a Balduvia topic). 
+Looking at relative importance of themes over time, we see some severe spikes (probably due to just a small number of cards released on a given day - it is unlikely that 100% of cards released in a set would be related to one topic. We still see the importance of Balduvia with the release of the Ice Age set in 1995, and a rise in the frequency of theme 5 (Goblins) in the past couple of years. In order to account for variance in how cards are released (with some dates only having one card releaesd and others having over 1,000), it may be useful to look at the importance of themes by month rather than by date of release. It's also interesting the topic 1 (Balduvia) seems to be the only one related to a specific fictional setting - I wonder if this is because BERTopic missed the others, other settings simply aren't as prominent, or if BERTopic combined them all within a fantasy setting topic (rather than a Balduvia topic).
 
 +++
 
@@ -210,6 +212,15 @@ mcmodel = pickle.load(mcobject)
 mlobject = open('multilabel_model.pkl', 'rb')
 mlmodel = pickle.load(mlobject)
 ```
+
+### Pre-Processing
+- Tokenize - using a regex expression that includes any set of characters that starts with a letter (following a word boundary) and is followed by one or more of a letter, apostrophe, or number, followed by a word boundary (so excluding punctuation besides contractions). This will get rid of punctuation and quotations marks (which there are many of) in the flavor text, as well as any mentions of mana costs and color, which I'm not interested in if I want to know how the narrative text reltaes to the classification. It will also exclude single-character words like "I" and "a", which don't add a lot (and will be removed by stopwords anyway). 
+
+- N-gram - max n-gram is set to 2 to account for possible compound meanings (e.g. "draw sword", "Ice Age"). It may also help account for proper nouns/names, which I expect to be common in flavor text.
+
+- Stop words - remove English stop words - I expect most of the relationship between flavor text and color to be based on nouns tied to a specific setting (e.g. snow, trees, ocean), so I'm not too worried about losing basic verbs, contractions, general pronouns, prepositions. 
+
++++
 
 ### Multiclass Classification
 
@@ -365,7 +376,7 @@ ax.axline((0,0), (max(y_test),max(y_test)), color='crimson')
 plt.show()
 ```
 
-## Part 4: Iteration, Measurement, & Validation 
+## Part 4: Iteration, Measurement, & Validation
 
 +++
 
@@ -382,14 +393,33 @@ plt.show()
 
 Report the improvement/reduction in performance with the parameter change for your metric, whether by copy-pasting or using `!dvc exp diff` in the notebook, the results of `dvc exp diff`. 
     
-[^1]: in production or bigger projects, consider using [`hydra`](https://hydra.cc/), [`driconfig`](https://dribia.github.io/driconfig/), or others like them to help manage .yaml and .toml settings files even better. 
+[^1]: in production or bigger projects, consider using [`hydra`](https://hydra.cc/), [`driconfig`](https://dribia.github.io/driconfig/), or others like them to help manage .yaml and .toml settings files even better.
 
 ```{code-cell} ipython3
-# F1 scores
-micro_F1 = f1_score(y_true, y_pred, average='macro')
-macro_F1 = f1_score(y_true, y_pred, average='micro')
-weighted_F1 = f1_score(y_true, y_pred, average='weighted')
+!dvc exp diff exp-6427a
 ```
 
 ## Extra Credit (5 pts) 
 If you can, use a feature importance or model explanation technique like LIME to describe, _briefly_, why your model is behaving in the way it is. E.g. what spots in the text for a green card are leading to it's classification as _green_, or what features are useful to say what the regressor thinks the EDHREC Rank should be.
+
+```{code-cell} ipython3
+import lime
+from lime import lime_text
+
+df = (pd.read_feather('../../../data/mtg.feather')
+     ).dropna(subset=['flavor_text'])
+```
+
+```{code-cell} ipython3
+mlobject = open('multilabel_model.pkl', 'rb')
+mlmodel = pickle.load(mlobject)
+```
+
+```{code-cell} ipython3
+from lime.lime_text import LimeTextExplainer
+explainer = LimeTextExplainer(class_names = mlmodel.classes_)
+```
+
+```{code-cell} ipython3
+exp = explainer.explain_instance(df.color_identity[17], mlmodel.predict, num_features=6)
+```

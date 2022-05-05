@@ -16,12 +16,14 @@
 # +
 import pandas as pd
 import numpy as np
+import pickle
+import re
 from bertopic import BERTopic
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.datasets import make_classification
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
@@ -39,6 +41,10 @@ df
 mlb = MultiLabelBinarizer()
 y = mlb.fit_transform(df['color_identity'])
 
+tokenize = re.compile(
+    r"(?:\b\w[\w\'\d]+)\b"
+)
+
 X = df.flavor_text
 
 X.shape, y.shape
@@ -47,7 +53,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_s
 X_train.shape, X_test.shape, y_train.shape, y_test.shape
 
 X, y = make_classification(n_features=4, random_state = 0)
-clf = make_pipeline(TfidfVectorizer(ngram_range=(1,2)),
+clf = make_pipeline(CountVectorizer(stop_words = 'english', ngram_range=(1, 2), tokenizer = tokenize.findall),
+                    TfidfTransformer(),
                     OneVsRestClassifier(SVC()))
 clf.fit(X_train, y_train)
 y_pred = clf.predict(X_test)

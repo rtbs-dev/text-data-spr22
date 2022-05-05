@@ -71,6 +71,27 @@ You will need to submit a pull-request on DagsHub with the following additions:
 - any updates to `environment.yml` to add the dependencies you want to use for this homework
 
 ```{code-cell} ipython3
+from sklearn.datasets import fetch_20newsgroups
+import pandas as pd
+```
+
+```{code-cell} ipython3
+categories = ['alt.atheism', 'talk.religion.misc']
+train = fetch_20newsgroups(random_state=1,
+                           subset='train',
+                           categories=categories,
+                           )
+```
+
+```{code-cell} ipython3
+type(train)
+```
+
+```{code-cell} ipython3
+pd.DataFrame(train.data, columns=[train.target_names])
+```
+
+```{code-cell} ipython3
 # Load scikit-learn models
 import pickle
 
@@ -183,7 +204,6 @@ import pickle
 
 # Processing
 from sklearn import preprocessing
-t
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 
@@ -282,21 +302,36 @@ Instructions indicated that multi-color identity observation should be unlabelle
 Alternative to the confusion matrix, ROC curves for each class is another avenue of evaluation that I have so far been unsucessful in implementing.
 
 ```{code-cell} ipython3
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+```
+
+```{code-cell} ipython3
 # Load Multilabel Model
-multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
+# multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
+
+multilabel_pipe = pickle.load(open('multilabel_pipe.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
 # Preprocess Output for Multilabel Prediction (CountVectorizer for Binarizer)
-cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
-y_ml = cv.fit_transform(ci)
+from sklearn.preprocessing import MultiLabelBinarizer
+mlb = MultiLabelBinarizer()
 
-X_train, X_test, y_ml_train, y_ml_test = train_test_split(X_tfidf, y_ml, random_state = 20220418)
+X = df['text'] + df['flavor_text'].fillna('')
+y_ml = mlb.fit_transform(df['color_identity'])
+
+X_train, X_test, y_ml_train, y_ml_test = train_test_split(X, y_ml, random_state = 20220418)
 ```
 
 ```{code-cell} ipython3
 # Predict Multilabel Classification
-y_ml_pred = multilabel_model.predict(X_test)
+y_ml_pred = multilabel_pipe.predict(X_test)
 ```
 
 #### Reference
@@ -331,9 +366,9 @@ def print_confusion_matrix(confusion_matrix, axes, class_label, class_names, fon
 # Visualize Multilabel Confusion Matrices
 cf_ml = multilabel_confusion_matrix(y_ml_test, y_ml_pred)
 
-fig, ax = plt.subplots(5, 1, figsize=(8, 8))
+fig, ax = plt.subplots(5, 1, figsize=(10, 10))
     
-for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, cv.get_feature_names_out()):
+for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, mlb.classes_):
     print_confusion_matrix(cfs_matrix, axes, label, ["N", "Y"])
     
 fig.tight_layout()
@@ -341,6 +376,7 @@ plt.show()
 ```
 
 ```{code-cell} ipython3
+## Precision-Recall
 for i in range(0, len(cf_ml)):
     cm = cf_ml[i]
     
@@ -348,7 +384,7 @@ for i in range(0, len(cf_ml)):
     false_pos = np.sum(cm, axis=0) - true_pos
     false_neg = np.sum(cm, axis=1) - true_pos
     
-    print(f"Precision-Recall of {cv.get_feature_names_out()[i]}")
+    print(f"Precision-Recall of {mlb.classes_[i]}")
     print(f"Precision: {round(np.mean(true_pos / (true_pos + false_pos)),2)}")
     print(f"Recall   : {round(np.mean(true_pos / (true_pos + false_neg)),2)}")
     print("\n")
@@ -367,102 +403,141 @@ for i in range(0, len(cf_ml)):
 ## Pipeline Experimentation
 
 ```{code-cell} ipython3
-df = pd.read_feather("../../../data/mtg.feather")
-small_df = df.sample(1000)
-X = small_df[['text','flavor_text','color_identity']].fillna({'flavor_text':''})
-X['text_flavor_text'] = small_df['text'] + small_df['flavor_text'].fillna('')
-y = mlb.fit_transform(small_df['color_identity'])
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2022)
+# df = pd.read_feather("../../../data/mtg.feather")
+# small_df = df.sample(1000)
+# X = small_df[['text','flavor_text','color_identity']].fillna({'flavor_text':''})
+# X['text_flavor_text'] = small_df['text'] + small_df['flavor_text'].fillna('')
+# y = mlb.fit_transform(small_df['color_identity'])
+# X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2022)
 ```
 
 ```{code-cell} ipython3
-from nltk import word_tokenize          
-from nltk.stem import WordNetLemmatizer 
-class LemmaTokenizer:
-    def __init__(self):
-        self.wnl = WordNetLemmatizer()
-    def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+# import numpy as np
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-tfidf = TfidfVectorizer(
-    min_df=5, 
-    tokenizer=LemmaTokenizer(),
-    ngram_range=(1,2),
-    stop_words='english')
+# features = np.recarray(
+#     shape=(len(X),),
+#     dtype=[('text_flavor_text', object)])
+```
 
-from sklearn.svm import SVC
-from sklearn.multiclass import OneVsRestClassifier
-multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+```{code-cell} ipython3
+# for index, row in X.iterrows():
+    
+#     tft = row['text'] + row['flavor_text']
+#     features['text_flavor_text'][index] = tft
+```
 
-from sklearn.feature_extraction.text import CountVectorizer
-cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+```{code-cell} ipython3
+# from sklearn.base import BaseEstimator, TransformerMixin
 
-from sklearn.pipeline import Pipeline
-from sklearn.pipeline import FeatureUnion
+# class TextConcatenator(BaseEstimator, TransformerMixin):
+#     """
 
-pipeline = Pipeline([
+#     :param BaseEstimator: Default
+#     :param TransformerMixin: Default
+#     """
+#     def fit(self, x, y=None):
+#         return self
 
-    # Use FeatureUnion to combine the features from subject and body
-    ('union', FeatureUnion(
-        transformer_list=[
-            # Pipeline for pulling features from the post's subject line
-            ('tft', Pipeline([
-                ('selector', ItemSelector('text_flavor_text')),
-                ('tfidf', tfidf),
-            ])),
+#     def transform(self, X):
+#         features = np.recarray(
+#             shape=(len(X),),
+#             dtype=[('text_flavor_text', object)])
+        
+#         for i, text in X:
             
-            ('ci', Pipeline([
-                ('selector', ItemSelector('color_identity')),
-                ('cv', cv),
-            ])),
+#         features['text_flavor_object'][i] = tft
+
+#         return features
+```
+
+```{code-cell} ipython3
+# from nltk import word_tokenize          
+# from nltk.stem import WordNetLemmatizer 
+# class LemmaTokenizer:
+#     def __init__(self):
+#         self.wnl = WordNetLemmatizer()
+#     def __call__(self, doc):
+#         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# tfidf = TfidfVectorizer(
+#     min_df=5, 
+#     tokenizer=LemmaTokenizer(),
+#     ngram_range=(1,2),
+#     stop_words='english')
+
+# from sklearn.svm import SVC
+# from sklearn.multiclass import OneVsRestClassifier
+# multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+
+# from sklearn.feature_extraction.text import CountVectorizer
+# cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+
+# from sklearn.pipeline import Pipeline
+# from sklearn.pipeline import FeatureUnion
+
+# pipeline = Pipeline([
+
+#     # Use FeatureUnion to combine the features from subject and body
+#     ('union', FeatureUnion(
+#         transformer_list=[
+#             # Pipeline for pulling features from the post's subject line
+#             ('tft', Pipeline([
+#                 ('selector', ItemSelector('text_flavor_text')),
+#                 ('tfidf', tfidf),
+#             ])),
             
-        ],
-    )),
-    # Use a SVC classifier on the combined features
-    ('svc', OneVsRestClassifier(SVC(kernel='linear'))),
-])
+#             ('ci', Pipeline([
+#                 ('selector', ItemSelector('color_identity')),
+#                 ('cv', cv),
+#             ])),
+            
+#         ],
+#     )),
+#     # Use a SVC classifier on the combined features
+#     ('svc', OneVsRestClassifier(SVC(kernel='linear'))),
+# ])
 
-pipeline.fit(X_train, y_train)
+# pipeline.fit(X_train, y_train)
 
-## Notes:
-# Is there a way to selet the final 5 columns as my labels?
+# ## Notes:
+# # Is there a way to selet the final 5 columns as my labels?
 ```
 
 ```{code-cell} ipython3
-pipeline.transform(X_train)
+# pipeline.transform(X_train)
 ```
 
 ```{code-cell} ipython3
-from nltk import word_tokenize          
-from nltk.stem import WordNetLemmatizer 
-class LemmaTokenizer:
-    def __init__(self):
-        self.wnl = WordNetLemmatizer()
-    def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+# from nltk import word_tokenize          
+# from nltk.stem import WordNetLemmatizer 
+# class LemmaTokenizer:
+#     def __init__(self):
+#         self.wnl = WordNetLemmatizer()
+#     def __call__(self, doc):
+#         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-tfidf = TfidfVectorizer(
-    min_df=5, 
-    tokenizer=LemmaTokenizer(),
-    ngram_range=(1,2),
-    stop_words='english')
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# tfidf = TfidfVectorizer(
+#     min_df=5, 
+#     tokenizer=LemmaTokenizer(),
+#     ngram_range=(1,2),
+#     stop_words='english')
 
-from sklearn.svm import SVC
-from sklearn.multiclass import OneVsRestClassifier
-multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+# from sklearn.svm import SVC
+# from sklearn.multiclass import OneVsRestClassifier
+# multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
 
-from sklearn.preprocessing import MultiLabelBinarizer
-mlb = MultiLabelBinarizer()
+# from sklearn.preprocessing import MultiLabelBinarizer
+# mlb = MultiLabelBinarizer()
 
-from sklearn import compose, pipeline
-pipe = pipeline.make_pipeline(tfidf, multilabel_model)
+# from sklearn import compose, pipeline
+# pipe = pipeline.make_pipeline(tfidf, multilabel_model)
 
-# Construct a TransformedTargetRegressor using this pipeline
-ttr = compose.TransformedTargetRegressor(regressor=pipe, transformer=mlb)
+# # Construct a TransformedTargetRegressor using this pipeline
+# ttr = compose.TransformedTargetRegressor(regressor=pipe, transformer=mlb)
 
-ttr.fit(X_train, y_train)
+# ttr.fit(X_train, y_train)
 ```
 
 ### Multilabel Confusion Matrix Discussion

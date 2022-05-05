@@ -28,40 +28,45 @@ def multilabel(seed=2022):
     :param seed: Seed to guarantee consistent results
     """
     import pandas as pd
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn import preprocessing
-    from sklearn.feature_extraction.text import CountVectorizer
+    
     from sklearn.model_selection import train_test_split
+    
+    from sklearn import preprocessing
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.preprocessing import MultiLabelBinarizer
+    
     from sklearn.svm import SVC
-    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.multiclass import OneVsRestClassifier    
+    
+    from sklearn import pipeline
+    
+#     from sklearn.pipeline import Pipeline
+#     from sklearn.pipeline import FeatureUnion
 
     import pickle
 
     df = pd.read_feather("../../../data/mtg.feather")
 
-    text = df['text'] + df['flavor_text'].fillna('')
-
+    X = df['text'] + df['flavor_text'].fillna('')
+    
+    mlb = MultiLabelBinarizer()
+    y = mlb.fit_transform(df['color_identity'])
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=seed)
+    
     tfidf = TfidfVectorizer(
         min_df=5, 
         tokenizer=LemmaTokenizer(),
         ngram_range=(1,2),
         stop_words='english')
-    
-    X_tfidf = tfidf.fit_transform(text)
 
-    ci = df['color_identity']
-
-    cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
-
-    y = cv.fit_transform(ci)
-
-    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state=seed)
-    
     multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
     
-    multilabel_model.fit(X_train, y_train)
+    pipe = pipeline.make_pipeline(tfidf, multilabel_model)
     
-    pickle.dump(multilabel_model, open('multilabel.sav', 'wb'))
+    pipe.fit(X_train, y_train)
+    
+    pickle.dump(pipe, open('multilabel_pipe.sav', 'wb'))
     
 #     multilabel_model_proba = OneVsRestClassifier(SVC(kernel='linear', probability=True))
     

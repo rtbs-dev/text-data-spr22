@@ -22,6 +22,16 @@ class LemmaTokenizer:
 
 
 # +
+import yaml
+
+with open("params.yaml", 'r') as fd:
+    params = yaml.safe_load(fd)
+    
+param_min_df = params['tfidf']['min_df']
+param_ngram_range = tuple(map(int, params['tfidf']['ngram_range'].split(', ')))
+
+
+# +
 def multilabel(seed=2022):
     """
     Prepares MTG data (X, y) and exports multilabel model using LinearSVC
@@ -55,9 +65,9 @@ def multilabel(seed=2022):
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=seed)
     
     tfidf = TfidfVectorizer(
-        min_df=5, 
+        min_df=param_min_df, 
         tokenizer=LemmaTokenizer(),
-        ngram_range=(1,2),
+        ngram_range=param_ngram_range,
         stop_words='english')
 
     multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))

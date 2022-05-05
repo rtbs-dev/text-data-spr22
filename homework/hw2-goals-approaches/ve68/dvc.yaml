@@ -18,6 +18,9 @@ stages:
     deps:
     - ../../../data/mtg.feather
     - multilabel.py
+    params:
+    - tfidf.min_df
+    - tfidf.ngram_range
     outs:
     - multilabel_pipe.sav
   regression:

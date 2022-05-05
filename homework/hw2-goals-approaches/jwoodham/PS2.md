@@ -143,7 +143,7 @@ topic_model.get_topic_info()
 
 ### Topics
 1. Balduvia (https://mtg.fandom.com/wiki/Balduvia, https://mtg.fandom.com/wiki/LovisLiga_Coldeyes)
-2. Maritime
+2. Aquatic
 3. Light/Dark
 4. Mortality
 5. Sword
@@ -182,9 +182,15 @@ topics_over_time['Frequency'] = topics_over_time['Frequency'] / topics_over_time
 topic_model.visualize_topics_over_time(topics_over_time, topics = [0, 1, 2, 3, 4, 5, 6])
 ```
 
-Looking at relative importance of themes over time, we see some severe spikes (probably due to just a small number of cards released on a given day - it is unlikely that 100% of cards released in a set would be related to one topic. We still see the importance of Balduvia with the release of the Ice Age set in 1995, and a rise in the frequency of theme 5 (Goblins) in the past couple of years. In order to account for variance in how cards are released (with some dates only having one card releaesd and others having over 1,000), it may be useful to look at the importance of themes by month rather than by date of release. It's also interesting the topic 1 (Balduvia) seems to be the only one related to a specific fictional setting - I wonder if this is because BERTopic missed the others, other settings simply aren't as prominent, or if BERTopic combined them all within a fantasy setting topic (rather than a Balduvia topic).
+Looking at relative importance of themes over time, we see some severe spikes (probably due to just a small number of cards released on a given day - it is unlikely that 100% of cards released in a set would be related to one topic. We still see the importance of Balduvia with the release of the Ice Age set in 1995, and a rise in the frequency of theme 5 (Goblins) in the past couple of years - particularly if we filter out topics with relative frequencies greater than .3, as below. 
 
-+++
+In order to account for variance in how cards are released (with some dates only having one card released and others having over 1,000), it may be useful to look at the importance of themes by month rather than by date of release. It's also interesting the topic 1 (Balduvia) seems to be the only one related to a specific fictional setting - I wonder if this is because BERTopic missed the others, other settings simply aren't as prominent, or if BERTopic combined them all within a fantasy setting topic (rather than a Balduvia topic).
+
+```{code-cell} ipython3
+# Visualize relative frequency of topics over time
+
+topic_model.visualize_topics_over_time(topics_over_time[topics_over_time['Frequency'] < .3], topics = [0, 1, 2, 3, 4, 5, 6])
+```
 
 ## Part 2 Supervised Classification
 
@@ -214,11 +220,12 @@ mlmodel = pickle.load(mlobject)
 ```
 
 ### Pre-Processing
+
 - Tokenize - using a regex expression that includes any set of characters that starts with a letter (following a word boundary) and is followed by one or more of a letter, apostrophe, or number, followed by a word boundary (so excluding punctuation besides contractions). This will get rid of punctuation and quotations marks (which there are many of) in the flavor text, as well as any mentions of mana costs and color, which I'm not interested in if I want to know how the narrative text reltaes to the classification. It will also exclude single-character words like "I" and "a", which don't add a lot (and will be removed by stopwords anyway). 
 
 - N-gram - max n-gram is set to 2 to account for possible compound meanings (e.g. "draw sword", "Ice Age"). It may also help account for proper nouns/names, which I expect to be common in flavor text.
 
-- Stop words - remove English stop words - I expect most of the relationship between flavor text and color to be based on nouns tied to a specific setting (e.g. snow, trees, ocean), so I'm not too worried about losing basic verbs, contractions, general pronouns, prepositions. 
+- Stop words - remove English stop words - I expect most of the relationship between flavor text and color to be based on nouns tied to a specific setting (e.g. snow, trees, ocean), so I'm not too worried about losing basic verbs, contractions, general pronouns, prepositions.
 
 +++
 
@@ -293,6 +300,11 @@ f.colorbar(disp.im_, ax=axes)
 plt.show()
 ```
 
+#### Discussion
+Overall, this model appears to be doing quite well, correctly predicting the vast majority of labels pretty much across the board. In the multiclass, it seems that the model has particularly high precision and recall for green, and particularly high recall - though relatively lower precision - for white, although based on this confusion matrix alone the differences between colors appear to be small. The fact that there is a smaller number of correctly predicted blue cards relative is due to the fact that there are fewer cards overall, rather than the classifier is less accuratefor blue. The multilevel classifier is likewise very effective, with remarkably low numbers of false negative and positives for each class. I could try lemmatizing the flavor text to see if that changes the results, although I expect that could introduce more ambiguity and make the classifications less accurate.
+
++++
+
 ## Part 3: Regression?
 
 > Can we predict the EDHREC "rank" of the card using the data we have available? 
@@ -305,6 +317,12 @@ plt.show()
     - Can we see the importance of those features? e.g. logistic weights? 
     
 How did you do? What would you like to try if you had more time?
+
++++
+
+#### Model
+
+I used LASSO to create and train a regression model of EDHREC using the flavor text, set to lower-case, tokenized, and and vectorized using TF-IDF. I wanted to see if the language used in flavor text for highly ranked cards was different enough that it could serve as the predictor of rank. I used LASSO since TF-IDF is going to produce a huge number of features, many of which will probably not be very helpful for the model, and LASSO will set their weights to 0 so it focuses only on the features that actually matter.
 
 ```{code-cell} ipython3
 # Bring in regression model
@@ -376,6 +394,12 @@ ax.axline((0,0), (max(y_test),max(y_test)), color='crimson')
 plt.show()
 ```
 
+#### Discussion
+
+This model is not particularly helpful - there does appear to be a slight upward trend as true values increase suggesting very weak correlation between predicted and true values; however, by and large for any one true value from 0 to over 20,000, predicted values can range anywhere from less than 0 to over 20,000 with pretty high variance. One thing I would like to try (and tried to do but couldn't figure out...) is to incorporate other factors like mana cost, release date, and color alongside the TF-IDF matrix for flavor text in the LASSO regression.
+
++++
+
 ## Part 4: Iteration, Measurement, & Validation
 
 +++
@@ -396,30 +420,13 @@ Report the improvement/reduction in performance with the parameter change for yo
 [^1]: in production or bigger projects, consider using [`hydra`](https://hydra.cc/), [`driconfig`](https://dribia.github.io/driconfig/), or others like them to help manage .yaml and .toml settings files even better.
 
 ```{code-cell} ipython3
-!dvc exp diff exp-6427a
-```
-
-## Extra Credit (5 pts) 
-If you can, use a feature importance or model explanation technique like LIME to describe, _briefly_, why your model is behaving in the way it is. E.g. what spots in the text for a green card are leading to it's classification as _green_, or what features are useful to say what the regressor thinks the EDHREC Rank should be.
-
-```{code-cell} ipython3
-import lime
-from lime import lime_text
-
-df = (pd.read_feather('../../../data/mtg.feather')
-     ).dropna(subset=['flavor_text'])
+json.load(open("metrics.json"))
 ```
 
 ```{code-cell} ipython3
-mlobject = open('multilabel_model.pkl', 'rb')
-mlmodel = pickle.load(mlobject)
+!dvc exp run -S preprocessing.ngrams.max=1 --temp
 ```
 
 ```{code-cell} ipython3
-from lime.lime_text import LimeTextExplainer
-explainer = LimeTextExplainer(class_names = mlmodel.classes_)
-```
-
-```{code-cell} ipython3
-exp = explainer.explain_instance(df.color_identity[17], mlmodel.predict, num_features=6)
+!dvc exp diff exp-a2e5f
 ```

@@ -19,7 +19,7 @@ stages:
     - ../../../data/mtg.feather
     - multilabel.py
     outs:
-    - multilabel.sav
+    - multilabel_pipe.sav
   regression:
     cmd: python regression.py
     deps:

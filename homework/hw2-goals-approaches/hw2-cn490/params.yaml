@@ -7,4 +7,4 @@ TfidfTransformer:
 CountVectorizer:
   ngram_range:
     min_n: 1
-    max_n: 2
+    max_n: 3

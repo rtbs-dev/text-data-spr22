@@ -7,19 +7,22 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multilabel.py
-      md5: 92a7ffe06e95e2342906a3ebea66a380
-      size: 2072
+      md5: f74ea3460323ee3466ef19c514fc8be7
+      size: 2186
     - path: my_functions.py
       md5: f8c88137430d6f6d13065ea8d02c908c
       size: 1653
     params:
       params.yaml:
-        LinearSVC.loss: hinge
+        CountVectorizer.ngram_range:
+          min_n: 1
+          max_n: 3
+        LinearSVC.loss: squared_hinge
         TfidfTransformer.use_idf: true
     outs:
     - path: metrics.json
-      md5: 65164555a78a5c0dbb7936cc0dfc40e1
+      md5: aca006216361756181451f973b1f8398
       size: 43
     - path: multilabel.pkl
-      md5: 37440f86c269402de8334ba07040ac12
-      size: 11983794
+      md5: 8148e59aa0b64876993a7da75e2015d3
+      size: 30302770

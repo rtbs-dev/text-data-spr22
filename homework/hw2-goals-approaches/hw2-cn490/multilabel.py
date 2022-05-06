@@ -53,6 +53,7 @@ model = Pipeline([('vectorizer', CountVectorizer(ngram_range=(1,2))),
     ('tfidf', TfidfTransformer(use_idf=True)),
     ('clf', OneVsRestClassifier(LinearSVC(
         loss = loss,
+        penalty = penalty,
         class_weight="balanced", random_state=42)))])
 
 #fit model with training data

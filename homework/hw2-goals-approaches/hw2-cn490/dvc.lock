@@ -14,12 +14,11 @@ stages:
       size: 1653
     params:
       params.yaml:
-        LinearSVC.loss: hinge
-        LinearSVC.penalty: l1
+        LinearSVC.loss: squared_hinge
     outs:
     - path: metrics.json
-      md5: 89dc5d3c2f73669b37c1d3bbf011aa30
-      size: 77
+      md5: 02a75895cb71a10a10327b4ee7f457fd
+      size: 85
     - path: multilabel.pkl
-      md5: 3ee84c4c114eed3a7daaa141352ccf07
-      size: 11983794
+      md5: 4730f7272502ae11a709f49133d3a3d0
+      size: 11983802

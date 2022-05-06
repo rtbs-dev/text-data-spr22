@@ -1,2 +1,4 @@
 /hw_bert_model
 /hw2_bert_model
+/multiclass_pipe.pkl
+/regression_GridSearch.pkl

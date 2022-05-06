@@ -1,27 +1,32 @@
 stages:
   stage_1:
-    cmd: topic_model.py mtg.feather > hw2_bert_model
+    cmd: python topic_model.py
     deps:
       - topic_model.py
       - ../../../data/mtg.feather
     outs:
       - hw2_bert_model
   stage_2a:
-    cmd: multiclass.py mtg.feather > multiclass_pipe.pkl
+    cmd: python multiclass.py 
     deps:
       - multiclass.py
       - ../../../data/mtg.feather
     outs:
       - multiclass_pipe.pkl
+    params:
+      - preprocessing.max_min_docs
+    metrics:
+      - metrics.json:
+          cache: false
   stage_2b:
-    cmd: multilabel.py mtg.feather > multilabel_pipe.pkl
+    cmd: python multilabel.py
     deps:
       - multilabel.py
       - ../../../data/mtg.feather
     outs:
       - multilabel_pipe.pkl
   stage_3:
-    cmd: rank_regression.py mtg.feather > regression_GridSearch.pkl
+    cmd: python rank_regression.py
     deps:
       - rank_regression.py
       - ../../../data/mtg.feather

@@ -25,6 +25,7 @@ stages:
       - multilabel.pkl
     params:
       - LinearSVC.loss
+      - LinearSVC.penalty
     metrics:
       - metrics.json:
           cache: false

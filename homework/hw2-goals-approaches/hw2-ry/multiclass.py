@@ -4,7 +4,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import pickle
+from sklearn.pipeline import Pipeline
 from sklearn import preprocessing
+
 
 # data preparation
 color = (pd.read_feather('../../../data/mtg.feather')# <-- will need to change for your notebook location
@@ -43,15 +45,18 @@ multiclass_model = LinearSVC()
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state = 123)
 
 ## fit multiclass_model
-multiclass_model.fit(X_train, y_train)
-
+#
 # save model using pickle
 
-pipe = pipeline.make_pipeline(tfidf, multilabel_model)
+multiclass_model.fit(X_train, y_train)
 
-    pipe.fit(X_train, y_train)
-
-    pickle.dump(pipe, open('multiclass_pipe.sav', 'wb'))
+pickle.dump(pipe, open('multiclass_pipe.sav', 'wb'))
 
 filename = 'multiclass_model.sav'
 pickle.dump(multiclass_model, open(filename, 'wb'))
+
+y_pred = multiclass_model.predict(X_test)
+
+metrics = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True))
+print(metrics)
+metrics["weighted avg"].to_json("metrics.json")

@@ -1,0 +1,3 @@
+tfidf:
+	tfidf.min_df
+	tfidf.max_df

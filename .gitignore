@@ -132,3 +132,4 @@ dmypy.json
 /ft_model
 /topic_model
 /reg_model.sav
+/multilabel_model

@@ -6,9 +6,6 @@ stages:
     - topic_model.py
     outs:
     - topic_model
-  multiclass_model:
-    cmd: '" -d" multiclass.py -d ../../../data/mtg.feather " -o" multiclass_model.sav
-      " python" multiclass.py ../../../data/mtg.feather'
   multilabel_model:
     cmd: '" -d" multilabel.py -d "../../../data/mtg.feather -o" multilabel_model.sav
       " python" multilabel.py ../../../data/mtg.feather'
@@ -19,3 +16,15 @@ stages:
     - rank_model.py
     outs:
     - reg_model.sav
+  multiclass_model -d:
+    cmd: multiclass.py -d ../../../data/mtg.feather-o multiclass_model.sav python
+      topic_model.py ../../../data/mtg.feather
+  multiclass_model:
+    cmd: tfidf.max_df
+    deps:
+    - ../../../data/mtg.feather
+    - multiclass.py
+    params:
+    - tfidf.min_df
+    outs:
+    - multilabel_model

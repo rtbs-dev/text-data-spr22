@@ -47,5 +47,11 @@ multiclass_model.fit(X_train, y_train)
 
 # save model using pickle
 
+pipe = pipeline.make_pipeline(tfidf, multilabel_model)
+
+    pipe.fit(X_train, y_train)
+
+    pickle.dump(pipe, open('multiclass_pipe.sav', 'wb'))
+
 filename = 'multiclass_model.sav'
 pickle.dump(multiclass_model, open(filename, 'wb'))

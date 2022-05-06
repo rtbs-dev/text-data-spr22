@@ -1,0 +1,3 @@
+LinearSVC:
+  loss: "squared_hinge"
+  penalty: "l2"

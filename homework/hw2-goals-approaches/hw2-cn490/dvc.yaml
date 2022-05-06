@@ -13,22 +13,27 @@ stages:
       - multiclass.py
       - my_functions.py
       - mtg.feather
-    # outs:
-    #   - multiclass.pkl
+    outs:
+      - multiclass.pkl
   multilabel:
     cmd: python multilabel.py
     deps:
       - multilabel.py
       - mtg.feather
       - my_functions.py
-    # outs:
-    #   - multilabel.pkl
+    outs:
+      - multilabel.pkl
+    params:
+      - LinearSVC.loss
+    metrics:
+      - metrics.json:
+          cache: false
   regression:
     cmd: python regression.py
     deps:
       - mtg.feather
       - my_functions.py
-    # outs:
-    #   - regression.pkl
+    outs:
+      - regression.pkl
 
 

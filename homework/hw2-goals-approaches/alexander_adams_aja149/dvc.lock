@@ -38,15 +38,15 @@ stages:
     params:
       params.yaml:
         preprocessing.max_min_docs:
-          smallest: 10
+          smallest: 5
           largest: 0.8
     outs:
     - path: metrics.json
-      md5: 3e259a8631a35e70bf366eafc88b6f2d
+      md5: 3ee251ffae8b42a855235c958eb00c10
       size: 89
     - path: multiclass_pipe.pkl
-      md5: 68690e4e57bc7417980e435a19f9fb58
-      size: 2556902
+      md5: 45810018c39607495dd2e5793797deaa
+      size: 3174087
   stage_3:
     cmd: python rank_regression.py
     deps:

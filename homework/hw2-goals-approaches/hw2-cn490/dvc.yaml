@@ -4,7 +4,7 @@ stages:
   #   deps:
   #     - topic_model.py
   #     - my_functions.py
-  #     - mtg.feather
+  #     - ../../../data/mtg.feather
   #   # outs:
   #   #   - my_model_embeddings
   # multiclass:
@@ -12,17 +12,17 @@ stages:
   #   deps:
   #     - multiclass.py
   #     - my_functions.py
-  #     - mtg.feather
+  #     - ../../../data/mtg.feather
   #   outs:
   #     - multiclass.pkl
   multilabel:
     cmd: python multilabel.py
     deps:
       - multilabel.py
-      # - ../../../data/mtg.feathers
+      - ../../../data/mtg.feather
       - my_functions.py
-    # outs:
-    #   - multilabel.pkl
+    outs:
+      - multilabel.pkl
     params:
       - LinearSVC.loss
     metrics:
@@ -31,7 +31,7 @@ stages:
   # regression:
   #   cmd: python regression.py
   #   deps:
-  #     - mtg.feather
+  #     - ../../../data/mtg.feather
   #     - my_functions.py
   #   outs:
   #     - regression.pkl

@@ -7,19 +7,19 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multilabel.py
-      md5: 27cfc1300ded88f685b4c696d9310890
-      size: 2121
+      md5: 4c3800d9a3b35802c0ec98123aee4573
+      size: 2103
     - path: my_functions.py
       md5: f8c88137430d6f6d13065ea8d02c908c
       size: 1653
     params:
       params.yaml:
         LinearSVC.loss: hinge
-        LinearSVC.penalty: l2
+        TfidfTransformer.use_idf: false
     outs:
     - path: metrics.json
-      md5: f285bb2685461b8c405e92ea8d832ea4
-      size: 77
+      md5: 7808fedf9d1081368c5a0c10d8d152a2
+      size: 78
     - path: multilabel.pkl
-      md5: 1d75310a6e2bc32dc51c6509fe8089e4
-      size: 11983794
+      md5: 5a0d2564ce388e41324d36edd309931e
+      size: 9400880

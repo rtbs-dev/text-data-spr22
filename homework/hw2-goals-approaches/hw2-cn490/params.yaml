@@ -1,3 +1,5 @@
 LinearSVC:
-  loss: hinge
-  penalty: l2
+  loss: squared_hinge
+
+TfidfTransformer:
+  use_idf: True

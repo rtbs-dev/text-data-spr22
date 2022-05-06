@@ -21,7 +21,7 @@ with open("params.yaml", "r") as fd:
 
 
 loss = params["LinearSVC"]["loss"]
-penalty = params["LinearSVC"]["penalty"]
+use_idf = params["TfidfTransformer"]["use_idf"]
 
 # print(loss)
 
@@ -50,10 +50,9 @@ y = MultiLabelBinarizer().fit_transform(df.color_identity)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)              
 
 model = Pipeline([('vectorizer', CountVectorizer(ngram_range=(1,2))),
-    ('tfidf', TfidfTransformer(use_idf=True)),
+    ('tfidf', TfidfTransformer(use_idf=use_idf)),
     ('clf', OneVsRestClassifier(LinearSVC(
         loss = loss,
-        penalty = penalty,
         class_weight="balanced", random_state=42)))])
 
 #fit model with training data
@@ -69,7 +68,7 @@ y_pred = model.predict(X_test)
 
 ranking_loss = label_ranking_loss(y_test, y_pred)
 # print(classification_report(y_test, y_pred, output_dict=True))
-metrics = {'penalty':penalty, 'loss':loss, 'label_ranking_loss': ranking_loss}
+metrics = {'loss':loss,'use_idf':use_idf, 'label_ranking_loss': ranking_loss}
 
 
 with open("metrics.json", "w") as outfile:

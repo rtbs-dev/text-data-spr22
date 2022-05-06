@@ -25,7 +25,7 @@ stages:
       - multilabel.pkl
     params:
       - LinearSVC.loss
-      - LinearSVC.penalty
+      - TfidfTransformer.use_idf
 
     metrics:
       - metrics.json:

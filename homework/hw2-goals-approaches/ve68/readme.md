@@ -646,3 +646,41 @@ For ElasticNet, predicted values of EDHREC rank were unfortunately bounded to a 
 By contrast, LASSO predicted values appropriate to the actual ranks, but predicted outside the realistic range (negative numbers and ranks greater than 25000). LASSO provided a more valuable model, but has a high variance and is skewed from perfect accuracy. While grouping by 'Block' could provide some insight, there doesn't seem to be structural bias due to the amount of noise excluding the (red/orange blocks).
 
 Interestingly, in comparing ElasticNet and LASSO, ElasticNet has less features than LASSO but yielded worse results. Since ElasticNet results are poor, I don't feel like there an appropriate comparison without looking at specific features. An interesting visualization could be logistic weights 'over time' as features are dropped out, but there are far too many features to create a manageable visualization.
+
++++
+
+## Part 4: Iteration, Measurement, & Validation
+
+Pick ONE of your models above (regression, multilabel, or multiclass) that you want to improve or investigate, and calculate metrics of interest for them to go beyond our confusion matrix/predicted-actual plots:
+
+* for multiclass, report average and F1
+* for multilabel, report an appropriate metric (e.g. `ranking_loss`)
+* for regression, report an appropriate metric (e.g. 'MAPE' or MSE), OR since these are ranks, the pearson correlation between predicted and actual may be more appropriate?
+
+in the corresponding `dvc.yaml` stage for your model-of-interest, add `params` and `metrics`
+* under `params`, pick a setting in your preprocessing (e.g. the TfidfVecorizer) that you want to change to imrpove your results. Set that param to your current setting, and have your model read from a `params.yaml` rather than directly writing it in your code.
+* under `metrics`, reference your `metrics.json` and have your code write the results as json to that file, rather than simply printing them or reporting them in the notebook.
+* commit your changes to your branch, `run dvc repro dvc.yaml` for your file, then run a new experiment that changes that one parameter: e.g. `dvc exp run -S preprocessing.ngrams.largest=1` (see the example/ folder for a complete working example).
+
+Report the improvement/reduction in performance with the parameter change for your metric, whether by copy-pasting or using !dvc exp diff in the notebook, the results of dvc exp diff.
+
++++
+
+|Experiment         |Created |ranking_loss |tfidf.min_df |tfidf.ngram_range|
+|-------------------|--------|-------------|-------------|-----------------|
+|workspace          |       -|0.17383      |20           |1, 3             |
+|hw3_ve68           |01:42 AM|0.15429      |5            |1, 2             |
+|99389ea [exp-4606e]|02:47 AM|0.17383      |20           |1, 3             |
+
+```{code-cell} ipython3
+print(
+"""
+────────────────────────────|──────────────────────────────────────────────────────────────
+  Experiment                |Created    ranking_loss   tfidf.min_df   tfidf.ngram_range   
+────────────────────────────|──────────────────────────────────────────────────────────────
+  workspace                 |-               0.17383   20             1, 3                 
+  hw3_ve68                  |01:42 AM        0.15429   5              1, 2                
+  └── 99389ea [exp-4606e]   |02:47 AM        0.17383   20             1, 3                
+────────────────────────────|──────────────────────────────────────────────────────────────
+""")
+```

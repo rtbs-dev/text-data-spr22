@@ -10,10 +10,17 @@ import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+import yaml
 
+with open("params.yaml", "r") as fd:
+    params = yaml.safe_load(fd)
+
+docs = params["preprocessing"]["max_min_docs"]    
+    
 #Read in data
 mtg = (pd.read_feather('../../../data/mtg.feather'))
 #Drop rows with missing values in the variables of interest
@@ -36,18 +43,22 @@ mtg = labels.merge(pd.DataFrame(mtg), how = 'right', on = 'color_label')
 y = mtg['label']
 
 #Select text columns as features
-X = mtg[['text', 'flavor_text']]
+X = mtg["text"].str.cat(mtg["flavor_text"], sep=" \n ")
 
 #Training test split 75/25
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
 
-#Preprocess text (this took several hours to debug and I am honestly not joking)
-preprocess = ColumnTransformer(transformers=[('text', TfidfVectorizer(), 'text'),
-                                             ('flavor_text', TfidfVectorizer(), 'flavor_text')])
+#Preprocess text 
+vectorizer = TfidfVectorizer(
+    min_df=docs['smallest'],
+    max_df=docs['largest'],
+    stop_words="english",
+    ngram_range = (1,2)
+)
 
 #Create pipeline with preprocessing and linear SVC
 pipe = Pipeline([
-    ('preprocess', preprocess),
+    ('preprocess', vectorizer),
     ('LinearSVC', LinearSVC())
 ])
 
@@ -56,4 +67,11 @@ fitted_pipe = pipe.fit(X_train, y_train)
 
 #Export pickeled pipe
 joblib.dump(fitted_pipe, 'multiclass_pipe.pkl')
+
+#Generate predictions
+y_pred = pipe.predict(X_test)
+
+#Output metrics to JSON
+metrics = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True))
+metrics["weighted avg"].to_json("metrics.json")
 

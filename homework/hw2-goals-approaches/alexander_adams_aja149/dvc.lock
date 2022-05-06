@@ -1,0 +1,62 @@
+schema: '2.0'
+stages:
+  stage_2b:
+    cmd: python multilabel.py
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: multilabel.py
+      md5: c9dbfaefe1eb0b3da90c18f36de93e18
+      size: 1783
+    outs:
+    - path: multilabel_pipe.pkl
+      md5: 180782f16545eabfbf6da9c0510410c2
+      size: 4489174
+  stage_1:
+    cmd: python topic_model.py
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: topic_model.py
+      md5: 5dbe87c861d89cc6515ec96b96817fa3
+      size: 451
+    outs:
+    - path: hw2_bert_model
+      md5: 2b221c8ad2acc61658fe0be7eb041b3e
+      size: 299653167
+  stage_2a:
+    cmd: python multiclass.py
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: multiclass.py
+      md5: 5e54b07af18aa775be865afc0dd6df42
+      size: 2302
+    params:
+      params.yaml:
+        preprocessing.max_min_docs:
+          smallest: 5
+          largest: 0.8
+    outs:
+    - path: metrics.json
+      md5: 3ee251ffae8b42a855235c958eb00c10
+      size: 89
+    - path: multiclass_pipe.pkl
+      md5: 45810018c39607495dd2e5793797deaa
+      size: 3174087
+  stage_3:
+    cmd: python rank_regression.py
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: rank_regression.py
+      md5: 56dc1ba2d80ab3df0469e360ee7a2a98
+      size: 2859
+    outs:
+    - path: regression_GridSearch.pkl
+      md5: f18534fbdb3165d703ece3d741c3b184
+      size: 7462420

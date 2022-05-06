@@ -2,4 +2,4 @@ LinearSVC:
   loss: squared_hinge
 
 TfidfTransformer:
-  use_idf: True
+  use_idf: true

@@ -68,7 +68,7 @@ y_pred = model.predict(X_test)
 
 ranking_loss = label_ranking_loss(y_test, y_pred)
 # print(classification_report(y_test, y_pred, output_dict=True))
-metrics = {'loss':loss,'use_idf':use_idf, 'label_ranking_loss': ranking_loss}
+metrics = {'label_ranking_loss': ranking_loss, 'loss':loss, 'use_idf':use_idf}
 
 
 with open("metrics.json", "w") as outfile:

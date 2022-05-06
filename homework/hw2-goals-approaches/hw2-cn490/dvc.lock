@@ -15,11 +15,11 @@ stages:
     params:
       params.yaml:
         LinearSVC.loss: squared_hinge
-        TfidfTransformer.use_idf: true
+        TfidfTransformer.use_idf: false
     outs:
     - path: metrics.json
-      md5: ba23c3cae69fb09d99e3d797a1a42182
+      md5: 392b6aee1335dd5d085e49f66c19d575
       size: 85
     - path: multilabel.pkl
-      md5: 7c11fb4fda6348cd5a36af00bac37a59
-      size: 11983802
+      md5: f815c4e0374f39468e67becd9882c07e
+      size: 9400888

@@ -1,0 +1,42 @@
+stages:
+  # topic-model:
+  #   cmd: python topic_model.py
+  #   deps:
+  #     - topic_model.py
+  #     - my_functions.py
+  #     - ../../../data/mtg.feather
+  #   # outs:
+  #   #   - my_model_embeddings
+  # multiclass:
+  #   cmd: python multiclass.py
+  #   deps:
+  #     - multiclass.py
+  #     - my_functions.py
+  #     - ../../../data/mtg.feather
+  #   outs:
+  #     - multiclass.pkl
+  multilabel:
+    cmd: python multilabel.py
+    deps:
+      - multilabel.py
+      - ../../../data/mtg.feather
+      - my_functions.py
+    outs:
+      - multilabel.pkl
+    params:
+      - LinearSVC.loss
+      - TfidfTransformer.use_idf
+      - CountVectorizer.ngram_range
+
+    metrics:
+      - metrics.json:
+          cache: false
+  # regression:
+  #   cmd: python regression.py
+  #   deps:
+  #     - ../../../data/mtg.feather
+  #     - my_functions.py
+  #   outs:
+  #     - regression.pkl
+
+

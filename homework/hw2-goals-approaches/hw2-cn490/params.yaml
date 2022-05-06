@@ -1,0 +1,10 @@
+LinearSVC:
+  loss: squared_hinge
+
+TfidfTransformer:
+  use_idf: true
+
+CountVectorizer:
+  ngram_range:
+    min_n: 1
+    max_n: 3

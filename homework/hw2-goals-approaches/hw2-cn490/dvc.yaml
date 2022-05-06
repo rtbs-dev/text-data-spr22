@@ -19,7 +19,7 @@ stages:
     cmd: python multilabel.py
     deps:
       - multilabel.py
-      - ../../../data/mtg.feathers
+      # - ../../../data/mtg.feathers
       - my_functions.py
     # outs:
     #   - multilabel.pkl

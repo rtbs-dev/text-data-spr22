@@ -1,1 +1,1 @@
-{"penalty": "l2", "loss": "squared_hinge", "label_ranking_loss": 0.11119359337742385}
+{"penalty": "l1", "loss": "hinge", "label_ranking_loss": 0.11357808071264679}

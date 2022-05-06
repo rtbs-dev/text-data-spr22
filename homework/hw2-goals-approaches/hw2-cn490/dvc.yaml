@@ -26,6 +26,7 @@ stages:
     params:
       - LinearSVC.loss
       - TfidfTransformer.use_idf
+      - CountVectorizer.ngram_range
 
     metrics:
       - metrics.json:

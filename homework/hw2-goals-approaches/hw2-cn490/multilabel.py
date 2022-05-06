@@ -22,10 +22,10 @@ with open("params.yaml", "r") as fd:
 
 loss = params["LinearSVC"]["loss"]
 use_idf = params["TfidfTransformer"]["use_idf"]
+min_n = params["CountVectorizer"]["ngram_range"]["min_n"]
+max_n = params["CountVectorizer"]["ngram_range"]["max_n"]
 
-# print(loss)
-
-# print(penalty)
+# print(min_n, max_n)
 # exit()
 # Read in magic data
 df = (
@@ -49,7 +49,7 @@ y = MultiLabelBinarizer().fit_transform(df.color_identity)
 # Train model
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)              
 
-model = Pipeline([('vectorizer', CountVectorizer(ngram_range=(1,2))),
+model = Pipeline([('vectorizer', CountVectorizer(ngram_range=(min_n,max_n))),
     ('tfidf', TfidfTransformer(use_idf=use_idf)),
     ('clf', OneVsRestClassifier(LinearSVC(
         loss = loss,

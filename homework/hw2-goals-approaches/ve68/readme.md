@@ -71,27 +71,6 @@ You will need to submit a pull-request on DagsHub with the following additions:
 - any updates to `environment.yml` to add the dependencies you want to use for this homework
 
 ```{code-cell} ipython3
-from sklearn.datasets import fetch_20newsgroups
-import pandas as pd
-```
-
-```{code-cell} ipython3
-categories = ['alt.atheism', 'talk.religion.misc']
-train = fetch_20newsgroups(random_state=1,
-                           subset='train',
-                           categories=categories,
-                           )
-```
-
-```{code-cell} ipython3
-type(train)
-```
-
-```{code-cell} ipython3
-pd.DataFrame(train.data, columns=[train.target_names])
-```
-
-```{code-cell} ipython3
 # Load scikit-learn models
 import pickle
 
@@ -332,6 +311,18 @@ X_train, X_test, y_ml_train, y_ml_test = train_test_split(X, y_ml, random_state 
 ```{code-cell} ipython3
 # Predict Multilabel Classification
 y_ml_pred = multilabel_pipe.predict(X_test)
+```
+
+```{code-cell} ipython3
+from sklearn.metrics import label_ranking_loss
+ranking_loss = label_ranking_loss(y_ml_test, y_ml_pred)
+```
+
+```{code-cell} ipython3
+import json
+
+with open('metrics.json', "w") as fd:
+    json.dump({"ranking_loss": ranking_loss}, fd, indent=4)
 ```
 
 #### Reference

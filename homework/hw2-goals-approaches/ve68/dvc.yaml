@@ -31,3 +31,11 @@ stages:
     outs:
     - regression_elasticnet.sav
     - regression_lasso.sav
+  evaluate:
+    cmd: python evaluate.py
+    deps:
+    - ../../../data/mtg.feather
+    - evaluate.py
+    metrics:
+    - metrics.json:
+        cache: false

@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.8
+    jupytext_version: 1.13.6
 kernelspec:
   display_name: Python [conda env:text-data-class]
   language: python
@@ -183,7 +183,6 @@ import pickle
 
 # Processing
 from sklearn import preprocessing
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 
@@ -282,21 +281,48 @@ Instructions indicated that multi-color identity observation should be unlabelle
 Alternative to the confusion matrix, ROC curves for each class is another avenue of evaluation that I have so far been unsucessful in implementing.
 
 ```{code-cell} ipython3
+from nltk import word_tokenize          
+from nltk.stem import WordNetLemmatizer 
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+```
+
+```{code-cell} ipython3
 # Load Multilabel Model
-multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
+# multilabel_model = pickle.load(open('multilabel.sav', 'rb'))
+
+multilabel_pipe = pickle.load(open('multilabel_pipe.sav', 'rb'))
 ```
 
 ```{code-cell} ipython3
 # Preprocess Output for Multilabel Prediction (CountVectorizer for Binarizer)
-cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
-y_ml = cv.fit_transform(ci)
+from sklearn.preprocessing import MultiLabelBinarizer
+mlb = MultiLabelBinarizer()
 
-X_train, X_test, y_ml_train, y_ml_test = train_test_split(X_tfidf, y_ml, random_state = 20220418)
+X = df['text'] + df['flavor_text'].fillna('')
+y_ml = mlb.fit_transform(df['color_identity'])
+
+X_train, X_test, y_ml_train, y_ml_test = train_test_split(X, y_ml, random_state = 20220418)
 ```
 
 ```{code-cell} ipython3
 # Predict Multilabel Classification
-y_ml_pred = multilabel_model.predict(X_test)
+y_ml_pred = multilabel_pipe.predict(X_test)
+```
+
+```{code-cell} ipython3
+from sklearn.metrics import label_ranking_loss
+ranking_loss = label_ranking_loss(y_ml_test, y_ml_pred)
+```
+
+```{code-cell} ipython3
+import json
+
+with open('metrics.json', "w") as fd:
+    json.dump({"ranking_loss": ranking_loss}, fd, indent=4)
 ```
 
 #### Reference
@@ -331,9 +357,9 @@ def print_confusion_matrix(confusion_matrix, axes, class_label, class_names, fon
 # Visualize Multilabel Confusion Matrices
 cf_ml = multilabel_confusion_matrix(y_ml_test, y_ml_pred)
 
-fig, ax = plt.subplots(5, 1, figsize=(8, 8))
+fig, ax = plt.subplots(5, 1, figsize=(10, 10))
     
-for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, cv.get_feature_names_out()):
+for axes, cfs_matrix, label in zip(ax.flatten(), cf_ml, mlb.classes_):
     print_confusion_matrix(cfs_matrix, axes, label, ["N", "Y"])
     
 fig.tight_layout()
@@ -341,6 +367,7 @@ plt.show()
 ```
 
 ```{code-cell} ipython3
+## Precision-Recall
 for i in range(0, len(cf_ml)):
     cm = cf_ml[i]
     
@@ -348,10 +375,160 @@ for i in range(0, len(cf_ml)):
     false_pos = np.sum(cm, axis=0) - true_pos
     false_neg = np.sum(cm, axis=1) - true_pos
     
-    print(f"Precision-Recall of {cv.get_feature_names_out()[i]}")
+    print(f"Precision-Recall of {mlb.classes_[i]}")
     print(f"Precision: {round(np.mean(true_pos / (true_pos + false_pos)),2)}")
     print(f"Recall   : {round(np.mean(true_pos / (true_pos + false_neg)),2)}")
     print("\n")
+```
+
+```{code-cell} ipython3
+# Load Multilabel Model
+# multilabel_model_proba = pickle.load(open('multilabel_proba.sav', 'rb'))
+```
+
+```{code-cell} ipython3
+# Predict Multilabel Classification Predictions
+# y_ml_pred_proba = multilabel_model_proba.predict_proba(X_test)
+```
+
+## Pipeline Experimentation
+
+```{code-cell} ipython3
+# df = pd.read_feather("../../../data/mtg.feather")
+# small_df = df.sample(1000)
+# X = small_df[['text','flavor_text','color_identity']].fillna({'flavor_text':''})
+# X['text_flavor_text'] = small_df['text'] + small_df['flavor_text'].fillna('')
+# y = mlb.fit_transform(small_df['color_identity'])
+# X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2022)
+```
+
+```{code-cell} ipython3
+# import numpy as np
+
+# features = np.recarray(
+#     shape=(len(X),),
+#     dtype=[('text_flavor_text', object)])
+```
+
+```{code-cell} ipython3
+# for index, row in X.iterrows():
+    
+#     tft = row['text'] + row['flavor_text']
+#     features['text_flavor_text'][index] = tft
+```
+
+```{code-cell} ipython3
+# from sklearn.base import BaseEstimator, TransformerMixin
+
+# class TextConcatenator(BaseEstimator, TransformerMixin):
+#     """
+
+#     :param BaseEstimator: Default
+#     :param TransformerMixin: Default
+#     """
+#     def fit(self, x, y=None):
+#         return self
+
+#     def transform(self, X):
+#         features = np.recarray(
+#             shape=(len(X),),
+#             dtype=[('text_flavor_text', object)])
+        
+#         for i, text in X:
+            
+#         features['text_flavor_object'][i] = tft
+
+#         return features
+```
+
+```{code-cell} ipython3
+# from nltk import word_tokenize          
+# from nltk.stem import WordNetLemmatizer 
+# class LemmaTokenizer:
+#     def __init__(self):
+#         self.wnl = WordNetLemmatizer()
+#     def __call__(self, doc):
+#         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# tfidf = TfidfVectorizer(
+#     min_df=5, 
+#     tokenizer=LemmaTokenizer(),
+#     ngram_range=(1,2),
+#     stop_words='english')
+
+# from sklearn.svm import SVC
+# from sklearn.multiclass import OneVsRestClassifier
+# multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+
+# from sklearn.feature_extraction.text import CountVectorizer
+# cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+
+# from sklearn.pipeline import Pipeline
+# from sklearn.pipeline import FeatureUnion
+
+# pipeline = Pipeline([
+
+#     # Use FeatureUnion to combine the features from subject and body
+#     ('union', FeatureUnion(
+#         transformer_list=[
+#             # Pipeline for pulling features from the post's subject line
+#             ('tft', Pipeline([
+#                 ('selector', ItemSelector('text_flavor_text')),
+#                 ('tfidf', tfidf),
+#             ])),
+            
+#             ('ci', Pipeline([
+#                 ('selector', ItemSelector('color_identity')),
+#                 ('cv', cv),
+#             ])),
+            
+#         ],
+#     )),
+#     # Use a SVC classifier on the combined features
+#     ('svc', OneVsRestClassifier(SVC(kernel='linear'))),
+# ])
+
+# pipeline.fit(X_train, y_train)
+
+# ## Notes:
+# # Is there a way to selet the final 5 columns as my labels?
+```
+
+```{code-cell} ipython3
+# pipeline.transform(X_train)
+```
+
+```{code-cell} ipython3
+# from nltk import word_tokenize          
+# from nltk.stem import WordNetLemmatizer 
+# class LemmaTokenizer:
+#     def __init__(self):
+#         self.wnl = WordNetLemmatizer()
+#     def __call__(self, doc):
+#         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# tfidf = TfidfVectorizer(
+#     min_df=5, 
+#     tokenizer=LemmaTokenizer(),
+#     ngram_range=(1,2),
+#     stop_words='english')
+
+# from sklearn.svm import SVC
+# from sklearn.multiclass import OneVsRestClassifier
+# multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
+
+# from sklearn.preprocessing import MultiLabelBinarizer
+# mlb = MultiLabelBinarizer()
+
+# from sklearn import compose, pipeline
+# pipe = pipeline.make_pipeline(tfidf, multilabel_model)
+
+# # Construct a TransformedTargetRegressor using this pipeline
+# ttr = compose.TransformedTargetRegressor(regressor=pipe, transformer=mlb)
+
+# ttr.fit(X_train, y_train)
 ```
 
 ### Multilabel Confusion Matrix Discussion
@@ -469,3 +646,41 @@ For ElasticNet, predicted values of EDHREC rank were unfortunately bounded to a 
 By contrast, LASSO predicted values appropriate to the actual ranks, but predicted outside the realistic range (negative numbers and ranks greater than 25000). LASSO provided a more valuable model, but has a high variance and is skewed from perfect accuracy. While grouping by 'Block' could provide some insight, there doesn't seem to be structural bias due to the amount of noise excluding the (red/orange blocks).
 
 Interestingly, in comparing ElasticNet and LASSO, ElasticNet has less features than LASSO but yielded worse results. Since ElasticNet results are poor, I don't feel like there an appropriate comparison without looking at specific features. An interesting visualization could be logistic weights 'over time' as features are dropped out, but there are far too many features to create a manageable visualization.
+
++++
+
+## Part 4: Iteration, Measurement, & Validation
+
+Pick ONE of your models above (regression, multilabel, or multiclass) that you want to improve or investigate, and calculate metrics of interest for them to go beyond our confusion matrix/predicted-actual plots:
+
+* for multiclass, report average and F1
+* for multilabel, report an appropriate metric (e.g. `ranking_loss`)
+* for regression, report an appropriate metric (e.g. 'MAPE' or MSE), OR since these are ranks, the pearson correlation between predicted and actual may be more appropriate?
+
+in the corresponding `dvc.yaml` stage for your model-of-interest, add `params` and `metrics`
+* under `params`, pick a setting in your preprocessing (e.g. the TfidfVecorizer) that you want to change to imrpove your results. Set that param to your current setting, and have your model read from a `params.yaml` rather than directly writing it in your code.
+* under `metrics`, reference your `metrics.json` and have your code write the results as json to that file, rather than simply printing them or reporting them in the notebook.
+* commit your changes to your branch, `run dvc repro dvc.yaml` for your file, then run a new experiment that changes that one parameter: e.g. `dvc exp run -S preprocessing.ngrams.largest=1` (see the example/ folder for a complete working example).
+
+Report the improvement/reduction in performance with the parameter change for your metric, whether by copy-pasting or using !dvc exp diff in the notebook, the results of dvc exp diff.
+
++++
+
+|Experiment         |Created |ranking_loss |tfidf.min_df |tfidf.ngram_range|
+|-------------------|--------|-------------|-------------|-----------------|
+|workspace          |       -|0.17383      |20           |1, 3             |
+|hw3_ve68           |01:42 AM|0.15429      |5            |1, 2             |
+|99389ea [exp-4606e]|02:47 AM|0.17383      |20           |1, 3             |
+
+```{code-cell} ipython3
+print(
+"""
+────────────────────────────|──────────────────────────────────────────────────────────────
+  Experiment                |Created    ranking_loss   tfidf.min_df   tfidf.ngram_range   
+────────────────────────────|──────────────────────────────────────────────────────────────
+  workspace                 |-               0.17383   20             1, 3                 
+  hw3_ve68                  |01:42 AM        0.15429   5              1, 2                
+  └── 99389ea [exp-4606e]   |02:47 AM        0.17383   20             1, 3                
+────────────────────────────|──────────────────────────────────────────────────────────────
+""")
+```

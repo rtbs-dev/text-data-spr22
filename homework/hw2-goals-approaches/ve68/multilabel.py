@@ -21,46 +21,71 @@ class LemmaTokenizer:
         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
 
+# +
+import yaml
+
+with open("params.yaml", 'r') as fd:
+    params = yaml.safe_load(fd)
+    
+param_min_df = params['tfidf']['min_df']
+param_ngram_range = tuple(map(int, params['tfidf']['ngram_range'].split(', ')))
+
+
+# +
 def multilabel(seed=2022):
     """
     Prepares MTG data (X, y) and exports multilabel model using LinearSVC
     :param seed: Seed to guarantee consistent results
     """
     import pandas as pd
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn import preprocessing
-    from sklearn.feature_extraction.text import CountVectorizer
+    
     from sklearn.model_selection import train_test_split
-    from sklearn.svm import LinearSVC
-    from sklearn.multiclass import OneVsRestClassifier
+    
+    from sklearn import preprocessing
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.preprocessing import MultiLabelBinarizer
+    
+    from sklearn.svm import SVC
+    from sklearn.multiclass import OneVsRestClassifier    
+    
+    from sklearn import pipeline
+    
+#     from sklearn.pipeline import Pipeline
+#     from sklearn.pipeline import FeatureUnion
 
     import pickle
 
     df = pd.read_feather("../../../data/mtg.feather")
 
-    text = df['text'] + df['flavor_text'].fillna('')
-
+    X = df['text'] + df['flavor_text'].fillna('')
+    
+    mlb = MultiLabelBinarizer()
+    y = mlb.fit_transform(df['color_identity'])
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=seed)
+    
     tfidf = TfidfVectorizer(
-        min_df=5, 
+        min_df=param_min_df, 
         tokenizer=LemmaTokenizer(),
-        ngram_range=(1,2),
+        ngram_range=param_ngram_range,
         stop_words='english')
-    
-    X_tfidf = tfidf.fit_transform(text)
 
-    ci = df['color_identity']
-
-    cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
-
-    y = cv.fit_transform(ci)
-
-    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, random_state=seed)
+    multilabel_model = OneVsRestClassifier(SVC(kernel='linear'))
     
-    multilabel_model = OneVsRestClassifier(LinearSVC(), n_jobs=1)
+    pipe = pipeline.make_pipeline(tfidf, multilabel_model)
     
-    multilabel_model.fit(X_train, y_train)
+    pipe.fit(X_train, y_train)
     
-    pickle.dump(multilabel_model, open('multilabel.sav', 'wb'))
+    pickle.dump(pipe, open('multilabel_pipe.sav', 'wb'))
+    
+#     multilabel_model_proba = OneVsRestClassifier(SVC(kernel='linear', probability=True))
+    
+#     multilabel_model_proba.fit(X_train, y_train)
+    
+#     pickle.dump(multilabel_model_proba, open('multilabel_proba.sav', 'wb'))
+
+
+# -
 
 if __name__ == "__main__":
     multilabel()

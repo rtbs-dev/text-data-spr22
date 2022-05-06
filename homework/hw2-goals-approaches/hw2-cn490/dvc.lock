@@ -7,18 +7,19 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multilabel.py
-      md5: f67238b659cc9e161aff8217f3fb102f
-      size: 2094
+      md5: 27cfc1300ded88f685b4c696d9310890
+      size: 2121
     - path: my_functions.py
       md5: f8c88137430d6f6d13065ea8d02c908c
       size: 1653
     params:
       params.yaml:
         LinearSVC.loss: squared_hinge
+        LinearSVC.penalty: l2
     outs:
     - path: metrics.json
       md5: 02a75895cb71a10a10327b4ee7f457fd
       size: 85
     - path: multilabel.pkl
-      md5: 4730f7272502ae11a709f49133d3a3d0
+      md5: 5f0be773b7313470b92e92ab3d1bc2f6
       size: 11983802

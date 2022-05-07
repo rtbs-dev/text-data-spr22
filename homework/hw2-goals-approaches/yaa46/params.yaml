@@ -1,2 +1,4 @@
-tfidf:
-  min_df: 3
+preprocessing:
+  ngrams:
+    smallest: 1
+    largest: 1

@@ -49,15 +49,17 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multiclass.py
-      md5: 8b3f92015734dff42c851341d0c253f4
-      size: 1893
+      md5: 94454d493b561ea6aebe99b9f2592e56
+      size: 1897
     params:
       params.yaml:
-        tfidf.min_df: 0.2
+        preprocessing.ngrams:
+          smallest: 1
+          largest: 1
     outs:
     - path: metrics.json
-      md5: 692ef77719fabca460088dac04027688
-      size: 177
+      md5: 7c96bedf93ca608481894e8490055b03
+      size: 178
     - path: mtg_classifier.pkl
-      md5: 84036f5c4ac1a128fd5d0352472eba03
-      size: 1787491
+      md5: db0f589c075ee4442f1adbc48b2ae213
+      size: 3548741

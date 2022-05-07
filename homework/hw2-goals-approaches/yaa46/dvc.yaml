@@ -29,7 +29,7 @@ stages:
     outs:
     - mtg_classifier.pkl
     params:
-    - tfidf.min_df
+    - preprocessing.ngrams
     metrics:
     - metrics.json:
         cache: false

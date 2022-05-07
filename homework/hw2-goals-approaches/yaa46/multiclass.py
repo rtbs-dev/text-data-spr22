@@ -9,7 +9,7 @@ import yaml
 with open("params.yaml", "r") as fd:
     params = yaml.safe_load(fd)
 
-min_df = params["tfidf"]["min_df"]
+ngrams = params["preprocessing"]["ngrams"]
 
 # read the data
 mtg = pd.read_feather('../../../data/mtg.feather')[["flavor_text", "text", "color_identity"]]
@@ -41,7 +41,7 @@ text.str.findall(tokenize).explode().unique()[:100]
 pipeline = Pipeline([
     ('tfidf', TfidfVectorizer(
     tokenizer=tokenize.findall,
-    min_df=min_df, 
+    min_df= 3, 
     max_df=0.8,
     stop_words='english',
     ngram_range=(1,2))),

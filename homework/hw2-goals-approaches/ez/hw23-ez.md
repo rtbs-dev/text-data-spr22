@@ -12,7 +12,7 @@ kernelspec:
   name: conda-env-text-data-class-py
 ---
 
-# Homework 2
+# Homework 2/3
 
 > The body grows stronger under stress. The mind does not.
 > 
@@ -355,5 +355,6 @@ print(classification_report(y_test, y_pred))
 ```
 
 ```{code-cell} ipython3
+# dvc exp run -S preprocessing.ngrams.largest=3
 !dvc exp diff
 ```

@@ -1,0 +1,12 @@
+stages:
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+    - multiclass.py
+    outs:
+    - multiclass.sav
+    params:
+      - preprocessing.ngrams
+    metrics:
+      - metrics.json:
+          cache: false

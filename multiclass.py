@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[27]:
 
 
 ##Dependencies
@@ -21,7 +21,7 @@ import sklearn.metrics as metrics
 import yaml
 
 
-# In[2]:
+# In[28]:
 
 
 ##Loading data
@@ -29,69 +29,69 @@ df = (pd.read_feather('C:/Users/VIOLIN/Desktop/text-data-spr22/data/mtg.feather'
 df
 
 
-# In[3]:
+# In[29]:
 
 
 df.shape #data exploration
 
 
-# In[4]:
+# In[30]:
 
 
 df.dtypes #data exploration
 
 
-# In[5]:
+# In[31]:
 
 
 df.isnull().any() #data exploration
 
 
-# In[6]:
+# In[32]:
 
 
 df.isnull().sum()  #data exploration
 
 
-# In[7]:
+# In[33]:
 
 
 df = df.dropna() #data exploration
 
 
-# In[8]:
+# In[34]:
 
 
 df.isnull().any() #data exploration
 
 
-# In[9]:
+# In[35]:
 
 
 df.shape #data exploration
 
 
-# In[10]:
+# In[36]:
 
 
 df['full_text'] = df['text'] + df['flavor_text'] ##preparing predictor variable
 
 
-# In[11]:
+# In[37]:
 
 
 x = df['full_text'].fillna('') #handling nulls
 x.isnull().any()
 
 
-# In[12]:
+# In[38]:
 
 
 y = df['color_identity'] ##defining y for multiclass 
 y = [list(i)[0] if len(i) == 1 else -1 for i in y] ##-1 for more than one color
 
 
-# In[13]:
+# In[39]:
 
 
 # label_encoder object knows how to understand word labels.
@@ -99,43 +99,43 @@ label_encoder = preprocessing.LabelEncoder()
 y = label_encoder.fit_transform(y)
 
 
-# In[14]:
+# In[40]:
 
 
 x_train, x_test, y_train, y_test = train_test_split(x, y) ##splitting the data
 
 
-# In[16]:
+# In[41]:
 
 
 with open("params.yaml", "r") as fd:
     params = yaml.safe_load(fd)
 
 
-# In[17]:
+# In[42]:
 
 
 ngrams = params["preprocessing"]["ngrams"]
 
 
-# In[18]:
+# In[43]:
 
 
 ##model pipeline
 text_clf = Pipeline([
-('vect', CountVectorizer(input='content',ngram_range=(ngrams["smallest"], ngrams["largest"]),max_df=25, min_df=5)), ##text preprocessing
+('vect', CountVectorizer(input='content',ngram_range=(ngrams["smallest"], ngrams["smallest"]),max_df=25, min_df=5)), ##text preprocessing
 ('tfidf', TfidfTransformer()), ##tfidf
 ('clf', LinearSVC())]) #model
 
 
-# In[19]:
+# In[44]:
 
 
 #fitting the data
 text_clf.fit(x_train, y_train)
 
 
-# In[20]:
+# In[45]:
 
 
 pickle.dump(text_clf, open('multiclass.sav','wb')) #saving the model as object
@@ -143,7 +143,7 @@ pickle.dump(text_clf, open('multiclass.sav','wb')) #saving the model as object
 
 # #### Test data 
 
-# In[21]:
+# In[46]:
 
 
 y_pred = text_clf.predict(x_test)
@@ -151,29 +151,41 @@ y_pred = text_clf.predict(x_test)
 
 # #### Mean Accuracy,Precision,Recall,F-Scores
 
-# In[22]:
+# In[47]:
 
 
 text_clf.score(x_test, y_test, sample_weight=None) ##mean accuracy
 
 
-# In[24]:
+# In[48]:
 
 
 metrics = pd.DataFrame(metrics.classification_report(y_test,y_pred,output_dict = True))
 metrics
 
 
-# In[26]:
+# In[49]:
 
 
 metrics["weighted avg"].to_json("metrics1.json") ##printing both the avgs
 
 
-# In[27]:
+# In[50]:
 
 
 metrics["macro avg"].to_json("metrics2.json") #macro avg
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

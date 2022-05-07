@@ -271,31 +271,15 @@ from regression import X, y, X_test, y_test
 ```
 
 ```{code-cell} ipython3
-reg_model
-```
-
-```{code-cell} ipython3
 # Regression model score
 reg_model.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3
 plt.plot(y, y, color='k', ls='--')
-plt.scatter(y_test, linear_model.predict(X_test), alpha=0.5, s=1)
+plt.scatter(y_test, reg_model.predict(X_test), alpha=0.5, s=1)
 
-plt.title('linear actual vs Pred. ')
-```
-
-```{code-cell} ipython3
-# Lasso score
-lasso_model.score(X_test, y_test)
-```
-
-```{code-cell} ipython3
-plt.plot(y, y, color='k', ls='--')
-plt.scatter(y_test, lasso_model.predict(X_test), alpha=0.5, s=1)
-
-plt.title('Lasso actual vs Pred. ')
+plt.title('regression actual vs Pred.')
 ```
 
 ```{code-cell} ipython3

@@ -6,6 +6,7 @@ stages:
     - topic_model.py
     outs:
     - topic_model
+
   multilabel_model:
     cmd: '" -d" multilabel.py -d "../../../data/mtg.feather -o" multilabel_model.sav
       " python" multilabel.py ../../../data/mtg.feather'
@@ -29,4 +30,18 @@ stages:
     - metrics.json
       cache: false
     outs:
-    - multilabel_model
+    - multilabel_model.sav
+
+  multiclass_model_pip:
+    cmd: python multiclass.py ../../../data/mtg.feather
+    deps:
+    - ../../../data/mtg.feather
+    - multiclass.py
+    params:
+    - tfidf.min_df
+    - tfidf.max_df
+    metrics:
+    - metrics.json
+        cache: false
+    outs:
+    - multiclass_pip.sav

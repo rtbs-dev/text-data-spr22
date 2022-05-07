@@ -1,3 +1,4 @@
-tfidf:
-	tfidf.min_df
-	tfidf.max_df
+preprocessing:
+  df:
+    smallest: 0.2
+    largest: 0.8

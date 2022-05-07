@@ -16,9 +16,6 @@ stages:
     - rank_model.py
     outs:
     - reg_model.sav
-  multiclass_model -d:
-    cmd: multiclass.py -d ../../../data/mtg.feather-o multiclass_model.sav python
-      topic_model.py ../../../data/mtg.feather
   multiclass_model:
     cmd: tfidf.max_df
     deps:

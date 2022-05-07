@@ -129,3 +129,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/ft_model
+/topic_model
+/reg_model.sav
+/multilabel_model

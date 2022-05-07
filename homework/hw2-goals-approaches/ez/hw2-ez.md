@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.8
+    jupytext_version: 1.11.5
 kernelspec:
   display_name: Python [conda env:text-data-class]
   language: python
@@ -80,6 +80,8 @@ ft_model = BERTopic.load("ft_model")
 ft_model.visualize_topics(top_n_topics = 9)
 ```
 
+![ft_model.png](attachment:ft_model.png)
+
 ```{code-cell} ipython3
 # Get topic information
 ft_model.get_topic_info()[2:10].set_index("Topic")
@@ -87,40 +89,60 @@ ft_model.get_topic_info()[2:10].set_index("Topic")
 
 #### Renaming Topics
 Topic 1: kami <br>
+Kami is the Japanese word for "great spirits" and kamigawa means "river of the gods." This topic contains all things about gods and their world. <br>
+<br>
 Topic 2: goblin <br>
-Topic 3: wildspeaker <br>
+Goblin is a type of creature in mtg and Squee is a quite common name for goblin. This topic is about the goblin creature.<br>
+<br>
+Topic 3: Garruk Wildspeaker <br>
+Garruk Wildspeaker is a planewalker. Since planewalkers are considered the most powerful beings in mtg, many flavor texts may refer to them.<br>
+<br>
 Topic 4: dragon <br>
+Dragon is a type of creature in mtg.<br>
+<br>
 Topic 5: darkness <br>
+Many of the mtg stories would mention dark magic of wizards, skeletons, etc. This topic is probably all about the dark side.<br>
+<br>
 Topic 6: gerrard <br>
+Gerrard Capashen is the protagonist of the mtg storyline. The "legacy" word appears in this topic because Garrard is the heir to Urza, a famous planewalker. This topic is telling the story around Garrard.<br>
+<br>
 Topic 7: mage <br>
-Topic 8: temper <br>
+Since mtg is all about magic, it makes sense that mage would appear in various flavor texts.<br>
+<br>
+Topic 8: instant/socery <br>
+After some research, I found that temper (Fiery Temper), geyser (Mana Geyser) and refract (refraction trap) are all among the instant or sorcery cards.<br>
 
 ```{code-cell} ipython3
 # Prepare data
-df_notna = df.dropna(subset=["flavor_text", "release_date"])
+df_notna = df.dropna(subset=["flavor_text", "release_date"]).reset_index(drop=True)
 docs = df_notna.flavor_text.to_list()
 timestamps = df_notna.release_date.to_list()
 ```
 
 ```{code-cell} ipython3
-# Train a BERTopic model
-topic_model = BERTopic(verbose=True)
-topics, probs = topic_model.fit_transform(docs)
-
-topics_over_time = topic_model.topics_over_time(docs, topics, timestamps)
+topics, probs = ft_model.fit_transform(docs)
+topics_over_time = ft_model.topics_over_time(docs, topics, timestamps)
 ```
 
 ```{code-cell} ipython3
 # Visualize topics over time
-topic_model.visualize_topics_over_time(topics_over_time, top_n_topics=9)
+ft_model.visualize_topics_over_time(topics_over_time, top_n_topics=9)
 ```
 
-Kami is the Japanese word for "great spirits." From the figure, we can see that the kami topic peaks around 2004, suggesting that there was probably an expansion set about kami released in 2004. After some research, I found out that *Champions of Kamigawa* was released in October 2004 as the first set in the Kamigawa block and it introduced many rare creatures with kami-like magics. I actually started playing mtg recently, and bought the *Kamigawa: Neon Dynasty* expansion set (released in February 2022) over the weekend. According to the storyline, this set represents the current era on Kamigawa, which is more than 1200 years after conclusion of the original Kamigawa block. If we excluded the 2004 kami outlier, we would probably see another smaller spike in 2022.
+![topics_over_time.png](attachment:topics_over_time.png)
+
++++
+
+From the figure, we can see that the kami topic peaks around 2004, suggesting that there was probably an expansion set about kami released in 2004. After some research, I found out that *Champions of Kamigawa* was released in October 2004 as the first set in the Kamigawa block and it introduced many rare creatures with kami-like magics. I actually started playing mtg recently, and bought the *Kamigawa: Neon Dynasty* expansion set (released in February 2022) over the weekend. According to the storyline, this set represents the current era on Kamigawa, which is more than 1200 years after conclusion of the original Kamigawa block. If we excluded the 2004 kami outlier, we would probably see another smaller spike in 2022.
 
 ```{code-cell} ipython3
 # Visualize topics over time without the 'kami' outlier
-topic_model.visualize_topics_over_time(topics_over_time, topics=[0,1,3,4,5,6,7])
+ft_model.visualize_topics_over_time(topics_over_time, topics=[1,3,4,5,6,7])
 ```
+
+![topics_over_time_no_kami.png](attachment:topics_over_time_no_kami.png)
+
++++
 
 After removing the kami outlier from the figure, we can see that the goblin topic peaks arouund 2012, 2016 and 2022, suggesting that goblin cards probably have gained popularity, resulting in multiple goblin-related expansion sets released over the years. This makes great sense to me, because I think that goblin cards are pretty strong and personally love using them.
 
@@ -148,7 +170,6 @@ You will need to preprocess the target _`color_identity`_ labels depending on th
 ### Multiclass
 
 ```{code-cell} ipython3
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
@@ -170,38 +191,11 @@ Preprocessing:
 - max_df = 0.8, ignore common words (appear in more than 80% of documents)
 
 ```{code-cell} ipython3
-# Load the data
-df = pd.read_feather("../../../data/mtg.feather")
-
-# Remove NAs
-df = df.dropna(subset = ["flavor_text", "text", "color_identity"]).reset_index(drop=True)
-
-# Remove multicolored cards
-df = df[df.color_identity.map(len) < 2]
+from multiclass import X, y
 ```
 
 ```{code-cell} ipython3
-# X
-tfidf = TfidfVectorizer(
-    min_df=5, # ignore rare words (appear in less than 5 documents)
-    max_df=0.8, # ignore common words (appear in more than 80% of documents)
-    stop_words="english"
-)
-text = df["text"] + df["flavor_text"].fillna('')
-X = tfidf.fit_transform(text)
-
-# y
-ci = [list(i)[0] if len(i) == 1 else 0 for i in df.color_identity]
-le = preprocessing.LabelEncoder()
-y = le.fit_transform(ci)
-
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
-```
-
-```{code-cell} ipython3
-ConfusionMatrixDisplay.from_estimator(multiclass_model, X, y, display_labels=le.classes_)
-# plot_confusion_matrix(multiclass_model, X_test, y_test)  
+ConfusionMatrixDisplay.from_estimator(multiclass_model, X, y)
 plt.show()
 ```
 
@@ -225,52 +219,13 @@ Preprocessing:
 - Transform _color_identity_ into lowecase
 
 ```{code-cell} ipython3
-# Instantiate OneVsRestClassifier
-# multilabel_model = OneVsRestClassifier(SVC(kernel="linear"))
-
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
-
-# Fit OneVsRestClassifier
-# multilabel_model.fit(X_train, y_train)
-```
-
-```{code-cell} ipython3
-# Save the model using pickle
-# pickle.dump(multilabel_model, open("multilabel.sav", 'wb'))
-```
-
-```{code-cell} ipython3
-# Load the data
-df = pd.read_feather("../../../data/mtg.feather")
-```
-
-```{code-cell} ipython3
-# X
-tfidf = TfidfVectorizer(
-    min_df=5, # ignore rare words (appear in less than 5 documents)
-    max_df=0.8, # ignore common words (appear in more than 80% of documents)
-    stop_words="english"
-)
-text = df["text"] + df["flavor_text"].fillna('')
-X = tfidf.fit_transform(text)
-```
-
-```{code-cell} ipython3
-# y
-ci = df["color_identity"]
-cv = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
-y = cv.fit_transform(ci)
+from multilabel import X_test, y_test
 ```
 
 ```{code-cell} ipython3
 y_pred = multilabel_model.predict(X_test)
 multilabel_confusion_matrix(y_test, y_pred)
 ```
-
-The multiclass model performs well for certain labels but not all of them. However, the multilabel model reaches an overall high accuracy.
-
-+++
 
 ## Part 3: Regression?
 
@@ -286,93 +241,46 @@ The multiclass model performs well for certain labels but not all of them. Howev
 How did you do? What would you like to try if you had more time?
 
 ```{code-cell} ipython3
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression, Lasso
+from sklearn.ensemble import BaggingRegressor
+from sklearn.model_selection import KFold
+from sklearn.model_selection import GridSearchCV
+```
+
+```{code-cell} ipython3
+# Load the regression model
+reg_model = pickle.load(open("regression.sav", 'rb'))
 ```
 
 I choose to perform a regression model, and feed in the following as X:
 - converted_mana_cost
 - power
 - toughness
-- color_identity (create a dummy variable for each color)
-- keywords (create a dummy variable of whether the card has any keywords)
 - rarity (create a dummy variable for each rarity level)
+- keywords (create a dummy variable of whether the card has any keywords)
+- color_identity (create a dummy variable for each color)
+- types (create a dummy variable for each type)
 
 ```{code-cell} ipython3
-# Load the regression models
-linear_model = pickle.load(open("linear.sav", 'rb'))
-lasso_model = pickle.load(open("lasso.sav", 'rb'))
+from regression import X, y, X_test, y_test
 ```
 
 ```{code-cell} ipython3
-# Load the data
-df = pd.read_feather("../../../data/mtg.feather")
-
-# Remove NAs in column edhrec_rank
-df = df.dropna(subset = ["edhrec_rank"]).reset_index(drop=True)
+reg_model
 ```
 
 ```{code-cell} ipython3
-# converted_mana_cost
-# convert to int
-df["converted_mana_cost"] = df["converted_mana_cost"].astype(int)
+# Regression model score
+reg_model.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3
-# power
-# Replace NaN power with 0
-df["power"] = df["power"].fillna(0).astype(int)
-
-# toughness
-# Replace NaN toughness with 0
-df["toughness"] = df["toughness"].fillna(0).astype(int)
-```
-
-```{code-cell} ipython3
-# color_identity
-# Create a df for color_identity dummy variables
-colors = pd.get_dummies(df.color_identity.apply(pd.Series).stack()).sum(level=0)
-# Merge df with colors on index
-df = df.join(colors)
-# Replace NaN color_identity dummy variables with 0
-df[colors.columns] = df[colors.columns].fillna(0).astype(int)
-```
-
-```{code-cell} ipython3
-# keywords
-# no_keywords = 0 & yes_keywords = 1
-df["keywords"] = df["keywords"].isnull().astype(int)
-```
-
-```{code-cell} ipython3
-# rarity
-# Create a dummy variable for each rarity level
-df = pd.get_dummies(df, columns=["rarity"])
-```
-
-```{code-cell} ipython3
-df = df[['converted_mana_cost', 'power', 'toughness', 
-         'B', 'G', 'R', 'U', 'W', 'keywords', 
-         'rarity_rare', 'rarity_common', 'rarity_uncommon', 
-         'edhrec_rank']]
-```
-
-```{code-cell} ipython3
-y = df['edhrec_rank']
-X = df.drop('edhrec_rank', axis=1)
-```
-
-```{code-cell} ipython3
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=111)
-```
-
-```{code-cell} ipython3
-# LinearRegression score
-linear_model.score(X_test, y_test)
-```
-
-```{code-cell} ipython3
-plt.plot(y,y, color='k', ls='--')
+plt.plot(y, y, color='k', ls='--')
 plt.scatter(y_test, linear_model.predict(X_test), alpha=0.5, s=1)
 
 plt.title('linear actual vs Pred. ')
@@ -384,8 +292,7 @@ lasso_model.score(X_test, y_test)
 ```
 
 ```{code-cell} ipython3
-
-plt.plot(y,y, color='k', ls='--')
+plt.plot(y, y, color='k', ls='--')
 plt.scatter(y_test, lasso_model.predict(X_test), alpha=0.5, s=1)
 
 plt.title('Lasso actual vs Pred. ')

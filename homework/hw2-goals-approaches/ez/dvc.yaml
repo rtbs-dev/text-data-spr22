@@ -9,19 +9,21 @@ stages:
   multiclass:
     cmd: python multiclass.py
     deps:
+    - ../../../data/mtg.feather
     - multiclass.py
     outs:
     - multiclass.sav
   multilabel:
     cmd: python multilabel.py
     deps:
+    - ../../../data/mtg.feather
     - multilabel.py
     outs:
     - multilabel.sav
   regression:
     cmd: python regression.py
     deps:
+    - ../../../data/mtg.feather
     - regression.py
     outs:
-    - linear.sav
-    - lasso.sav
+    - regression.sav

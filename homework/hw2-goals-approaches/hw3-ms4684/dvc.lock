@@ -1,0 +1,23 @@
+schema: '2.0'
+stages:
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: multiclass.py
+      md5: 0e4c46ddf8329c34a95207bd562b7df4
+      size: 7471
+    params:
+      params.yaml:
+        preprocessing.ngrams:
+          smallest: 1
+          largest: 2
+    outs:
+    - path: metrics.json
+      md5: f3af05a3f228d917316b7168ef99c7f0
+      size: 1107
+    - path: multiclass_classifier.pickle
+      md5: 48ddcf6d2abccd29ef1d89dfd6c1c8cc
+      size: 3354965

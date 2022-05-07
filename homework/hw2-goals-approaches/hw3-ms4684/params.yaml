@@ -1,0 +1,4 @@
+preprocessing:
+  ngrams:
+    smallest: 1
+    largest: 2

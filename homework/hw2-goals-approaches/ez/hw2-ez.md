@@ -250,6 +250,8 @@ from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.ensemble import BaggingRegressor
 from sklearn.model_selection import KFold
 from sklearn.model_selection import GridSearchCV
+from sklearn.inspection import permutation_importance
+from plotnine import *
 ```
 
 ```{code-cell} ipython3
@@ -267,7 +269,7 @@ I choose to perform a regression model, and feed in the following as X:
 - types (create a dummy variable for each type)
 
 ```{code-cell} ipython3
-from regression import X, y, X_test, y_test
+from regression import X, y, X_train, y_train, X_test, y_test
 ```
 
 ```{code-cell} ipython3
@@ -282,6 +284,76 @@ plt.scatter(y_test, reg_model.predict(X_test), alpha=0.5, s=1)
 plt.title('regression actual vs Pred.')
 ```
 
-```{code-cell} ipython3
+## Extra Credit (5 pts)
 
+```{code-cell} ipython3
+vi = permutation_importance(reg_model, X_train, y_train, n_repeats=5)
+```
+
+```{code-cell} ipython3
+# Organize as a df
+vi_df = pd.DataFrame(dict(variable=X_train.columns,
+                          vi = vi['importances_mean'],
+                          std = vi['importances_std']))
+
+# Generate intervals
+vi_df['low'] = vi_df['vi'] - 2*vi_df['std']
+vi_df['high'] = vi_df['vi'] + 2*vi_df['std']
+
+# Put in order from most to least important
+vi_df = vi_df.sort_values(by="vi", ascending=False).reset_index(drop=True)
+```
+
+```{code-cell} ipython3
+top10 = vi_df[0:10]
+
+# Plot
+(
+    ggplot(top10,
+           aes(x="variable",y="vi")) +
+    geom_col(alpha=.5) +
+    geom_point() +
+    geom_errorbar(aes(ymin="low", ymax="high"), width=.2) +
+    scale_x_discrete(limits=top10.variable.tolist()) +
+    coord_flip() +
+    labs(y="Reduction in AUC ROC",x="")
+)
+```
+
+From the variable importance plot, we can see that `rarity` is the most important of all variables. It makes sense, because the rarer a card is, the higher it ranks. `converted_mana_cost` ranks the second, suggesting that the more mana a card needs, the stronger. `power` and `toughness` play a big part because they basically represent how strong a card attacks and blocks. The `keywords` variable here is a dummy on whether the card has keywords. In mtg, if a card has some keywords, it usually means that it has extra abilities, such as flying, haste, etc. It seems that the `color-identity` of a card doesn't matter that much, which is understandable, because there are strong cards in every color.
+
++++
+
+## Part 4: Iteration, Measurement, & Validation
+
+> No model is perfect, and experimentation is key. How can we more easily iterate and validate our model? 
+
+- Pick **ONE** of your models above (regression, multilabel, or multiclass) that you want to improve or investigate, and calculate metrics of interest for them to go beyond our confusion matrix/predicted-actual plots:
+    - for multiclass, report average and F1
+    - for multilabel, report an [appropriate metric](https://scikit-learn.org/stable/modules/model_evaluation.html#multilabel-ranking-metrics) (e.g. `ranking_loss`)
+    - for regression, report an [appropriate metric](https://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics) (e.g. 'MAPE' or MSE), **OR** since these are ranks, the [pearson correlation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.pearsonr.html) between predicted and actual may be more appropriate?
+- in the corresponding `dvc.yaml` stage for your model-of-interest, add `params` and `metrics`
+    - under `params`, pick a setting in your preprocessing (e.g. the `TfidfVecorizer`) that you want to change to imrpove your results. Set that param to your current setting, and have your model read from a `params.yaml` rather than directly writing it in your code.
+    - under `metrics`, reference your `metrics.json` and have your code write the results as json to that file, rather than simply printing them or reporting them in the notebook.
+- commit your changes to your branch, run `dvc repro dvc.yaml` for your file, then run a new experiment that changes that one parameter: e.g. `dvc exp run -S preprocessing.ngrams.largest=1` (see the `example/` folder for a complete working example).
+
+Report the improvement/reduction in performance with the parameter change for your metric, whether by copy-pasting or using `!dvc exp diff` in the notebook, the results of `dvc exp diff`.
+
+```{code-cell} ipython3
+from multiclass_pipe import X_train, X_test, y_train, y_test
+from sklearn.metrics import classification_report
+```
+
+```{code-cell} ipython3
+# Load the multiclass_pipe model
+multiclass_pipe = pickle.load(open("multiclass_pipe.sav", 'rb'))
+```
+
+```{code-cell} ipython3
+y_pred = multiclass_pipe.predict(X_test)
+print(classification_report(y_test, y_pred))
+```
+
+```{code-cell} ipython3
+!dvc exp diff
 ```

@@ -116,5 +116,5 @@ best = search.best_estimator_
 
 best.score(X_test, y_test)
 
-# Save the models using pickle
+# Save the model using pickle
 pickle.dump(best, open("regression.sav", 'wb'))

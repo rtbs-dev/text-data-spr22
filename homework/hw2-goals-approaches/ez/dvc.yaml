@@ -27,3 +27,15 @@ stages:
     - regression.py
     outs:
     - regression.sav
+  multiclass_pipe:
+    cmd: python multiclass_pipe.py
+    deps:
+    - ../../../data/mtg.feather
+    - multiclass_pipe.py
+    outs:
+    - multiclass_pipe.sav
+    params:
+      - preprocessing.ngrams
+    metrics:
+      - metrics.json:
+          cache: false

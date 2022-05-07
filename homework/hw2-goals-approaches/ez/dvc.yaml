@@ -1,0 +1,41 @@
+stages:
+  topic-model:
+    cmd: python topic_model.py
+    deps:
+    - ../../../data/mtg.feather
+    - topic_model.py
+    outs:
+    - ft_model
+  multiclass:
+    cmd: python multiclass.py
+    deps:
+    - ../../../data/mtg.feather
+    - multiclass.py
+    outs:
+    - multiclass.sav
+  multilabel:
+    cmd: python multilabel.py
+    deps:
+    - ../../../data/mtg.feather
+    - multilabel.py
+    outs:
+    - multilabel.sav
+  regression:
+    cmd: python regression.py
+    deps:
+    - ../../../data/mtg.feather
+    - regression.py
+    outs:
+    - regression.sav
+  multiclass_pipe:
+    cmd: python multiclass_pipe.py
+    deps:
+    - ../../../data/mtg.feather
+    - multiclass_pipe.py
+    outs:
+    - multiclass_pipe.sav
+    params:
+      - preprocessing.ngrams
+    metrics:
+      - metrics.json:
+          cache: false

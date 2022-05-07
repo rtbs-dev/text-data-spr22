@@ -2,8 +2,14 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1_score, recall_score, precision_score
+from sklearn.metrics import classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
+import yaml 
+
+with open("params.yaml", "r") as fd:
+    params = yaml.safe_load(fd)
+
+min_df = params["tfidf"]["min_df"]
 
 # read the data
 mtg = pd.read_feather('../../../data/mtg.feather')[["flavor_text", "text", "color_identity"]]
@@ -35,7 +41,7 @@ text.str.findall(tokenize).explode().unique()[:100]
 pipeline = Pipeline([
     ('tfidf', TfidfVectorizer(
     tokenizer=tokenize.findall,
-    min_df=3, 
+    min_df=min_df, 
     max_df=0.8,
     stop_words='english',
     ngram_range=(1,2))),
@@ -48,18 +54,16 @@ X_train, X_test, y_train, y_test = train_test_split(text, mtg["color_identity"],
 # fit the pipeline
 pipeline.fit(X_train, y_train)
 
-# score the pipeline
-
-pipeline.score(X_test, y_test)
-
-f1 = f1_score(y_test, pipeline.predict(X_test), average=None)
-
-precision = precision_score(y_test, pipeline.predict(X_test), average=None)
-
-recall = recall_score(y_test, pipeline.predict(X_test), average=None)
-
 # save model
 import pickle   
 # save the model with pickle- change this path
 with open('mtg_classifier.pkl', 'wb') as f:
     pickle.dump(pipeline, f)
+
+# score the pipeline
+y_pred =  pipeline.predict(X_test)
+report = pd.DataFrame(classification_report(y_test, y_pred, output_dict=True))
+metrics = report.transpose()["f1-score"]
+
+# print metrtics to json
+metrics.to_json("metrics.json")

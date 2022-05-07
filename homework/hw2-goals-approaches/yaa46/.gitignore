@@ -4,3 +4,7 @@
 /regression.pkl
 ../../../shakespeare.txt
 ../../../Shakespeare_data.csv
+/regression_df.csv
+../../../.DS_Store
+../../.DS_Store
+../.DS_Store

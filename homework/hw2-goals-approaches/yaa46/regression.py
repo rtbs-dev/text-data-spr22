@@ -76,18 +76,21 @@ vect = TfidfVectorizer(
 
 
 # fit and transform and make dtm
-X =vect.fit_transform(text)
+X = vect.fit_transform(text)
 term_indices = {index: term for term, index in vect.vocabulary_.items()}
 colterms = [term_indices[i] for i in range(X.shape[1])]
 dtm = pd.DataFrame(X.toarray(), columns=colterms)
 
 # combine dtm and mtg
 mtg = pd.concat([mtg, dtm], axis=1)
-mtg.dropna(inplace=True)
 
-# target and features w/o text
-y = mtg.edhrec_rank 
-X = mtg.drop(['edhrec_rank'], axis=1)
+# make regression dataframe
+regression_df = mtg.dropna()
+regression_df.to_csv('regression_df.csv', index=False)
+
+# target and features
+y = regression_df.edhrec_rank 
+X = regression_df.drop(['edhrec_rank'], axis=1)
 
 # train test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -97,16 +100,6 @@ clf = LinearRegression().fit(X_train, y_train)
 
 # test clf
 clf.score(X_test, y_test)
-
-# regression using text
-# train test split
-# X_train, X_test, y_train, y_test = train_test_split(dtm, y, test_size=0.2, random_state=42)
-
-# train logistic regression
-# clf = LinearRegression().fit(X_train, y_train)
-
-# test clf
-# clf.score(X_test, y_test)
 
 # save the model with pickle
 with open('regression.pkl', 'wb') as f:

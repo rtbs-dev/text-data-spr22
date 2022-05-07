@@ -1,5 +1,21 @@
 schema: '2.0'
 stages:
+  regression:
+    cmd: python regression.py ../../../data/mtg.feather
+    deps:
+    - path: ../../../data/mtg.feather
+      md5: 84e50093078e4324073a62424276b57d
+      size: 9411618
+    - path: regression.py
+      md5: 9fa5b1d9ea072d6da7f72de33eb7951b
+      size: 3084
+    outs:
+    - path: regression.pkl
+      md5: 7b67ec3ee2fae0b4be7148bbfc577e95
+      size: 425674
+    - path: regression_df.csv
+      md5: 3b7334bd17d05c0584ddfc41edca70e9
+      size: 2836642916
   topic_model:
     cmd: python topic_model.py ../../../data/mtg.feather
     deps:
@@ -11,21 +27,8 @@ stages:
       size: 1746
     outs:
     - path: my_model
-      md5: 20b58121b1f5fd83211dde1d55cfb6f5
-      size: 293230609
-  multiclass:
-    cmd: python multiclass.py ../../../data/mtg.feather
-    deps:
-    - path: ../../../data/mtg.feather
-      md5: 84e50093078e4324073a62424276b57d
-      size: 9411618
-    - path: multiclass.py
-      md5: 63aaa9b78615df1237761b661aaba5bf
-      size: 1817
-    outs:
-    - path: mtg_classifier.pkl
-      md5: b5493d8be033ebd7730efdf4c449eb50
-      size: 3548741
+      md5: 846b53c0bd1671bbd9daba602789e71b
+      size: 293489207
   multilabel:
     cmd: python multilabel.py ../../../data/mtg.feather
     deps:
@@ -33,22 +36,28 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multilabel.py
-      md5: 58192ae035796380017afe1566e110ee
+      md5: 8ade5d7a8363feff41d35ef30926e9f6
       size: 2178
     outs:
     - path: mtg_classifier_multilabel.pkl
-      md5: 9ed9fabe7490b0504cc86d7cf010f8f3
-      size: 12530018
-  regression:
-    cmd: python regression.py ../../../data/mtg.feather
+      md5: 11df76cc1854e69036aa8c9688b9b78d
+      size: 4534293
+  multiclass:
+    cmd: python multiclass.py ../../../data/mtg.feather
     deps:
     - path: ../../../data/mtg.feather
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
-    - path: regression.py
-      md5: 353fe49964b0891cfd541014131f0161
-      size: 3240
+    - path: multiclass.py
+      md5: 8b3f92015734dff42c851341d0c253f4
+      size: 1893
+    params:
+      params.yaml:
+        tfidf.min_df: 0.2
     outs:
-    - path: regression.pkl
-      md5: 7b67ec3ee2fae0b4be7148bbfc577e95
-      size: 425674
+    - path: metrics.json
+      md5: 692ef77719fabca460088dac04027688
+      size: 177
+    - path: mtg_classifier.pkl
+      md5: 84036f5c4ac1a128fd5d0352472eba03
+      size: 1787491

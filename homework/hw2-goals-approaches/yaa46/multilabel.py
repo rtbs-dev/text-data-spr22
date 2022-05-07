@@ -13,16 +13,18 @@ mtg = pd.read_feather('../../../data/mtg.feather')[["flavor_text", "text", "colo
 mtg.dropna(inplace=True)
 
 # strip brackets from color_identity 
-mtg["color_identity"] = mtg["color_identity"].astype(str).str.replace("[", "").str.replace("]", "")
+#mtg["color_identity"] = mtg["color_identity"].astype(str).str.replace("[", "").str.replace("]", "")
 
 # split color_identity string values into their own columns
-y = mtg["color_identity"].str.replace("'", "").str.split(" ", expand=True)
+#y = mtg["color_identity"].str.replace("'", "").str.split(" ", expand=True)
 
 # pandas mapping function
-color_mapping = {'W': 'tan', 'U': 'blue', 'B': 'purple', 'R': 'red', 'G': 'green', 'M': 'goldenrod'}
+#color_mapping = {'W': 'tan', 'U': 'blue', 'B': 'purple', 'R': 'red', 'G': 'green', 'M': 'goldenrod'}
 
 # replace values in y with color_mapping
-y = y.replace(color_mapping)
+#y = y.replace(color_mapping)
+
+y = MultiLabelBinarizer().fit_transform(mtg.color_identity)
 
 text = mtg.text.str.cat(mtg.flavor_text, sep='\n')
 
@@ -43,13 +45,11 @@ pipeline = Pipeline([
     max_df=0.8,
     stop_words='english',
     ngram_range=(1,2))),
-    ('clf', LinearSVC())
+    ('clf', MultiOutputClassifier(LinearSVC()))
 ])
 
-multilabel_classifier = MultiOutputClassifier(pipeline, n_jobs=-1)
-
 # train test split
-X_train, X_test, y_train, y_test = train_test_split(text, mtg["color_identity"], test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(text, y, test_size=0.2, random_state=42)
 
 # fit to mtg using multilabel
 pipeline.fit(X_train, y_train)

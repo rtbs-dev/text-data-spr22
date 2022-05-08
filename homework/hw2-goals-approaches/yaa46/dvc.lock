@@ -27,8 +27,8 @@ stages:
       size: 1746
     outs:
     - path: my_model
-      md5: 846b53c0bd1671bbd9daba602789e71b
-      size: 293489207
+      md5: e8e9bdf3bc7e72e6c7828d69b2b2e304
+      size: 293412973
   multilabel:
     cmd: python multilabel.py ../../../data/mtg.feather
     deps:
@@ -40,7 +40,7 @@ stages:
       size: 2178
     outs:
     - path: mtg_classifier_multilabel.pkl
-      md5: 11df76cc1854e69036aa8c9688b9b78d
+      md5: 913354c87c904124a9d4165b45409fc0
       size: 4534293
   multiclass:
     cmd: python multiclass.py ../../../data/mtg.feather
@@ -49,8 +49,8 @@ stages:
       md5: 84e50093078e4324073a62424276b57d
       size: 9411618
     - path: multiclass.py
-      md5: 94454d493b561ea6aebe99b9f2592e56
-      size: 1897
+      md5: f467bfb3235f3ca011c90f42ec1140ad
+      size: 1931
     params:
       params.yaml:
         preprocessing.ngrams:
@@ -58,8 +58,8 @@ stages:
           largest: 1
     outs:
     - path: metrics.json
-      md5: 7c96bedf93ca608481894e8490055b03
-      size: 178
+      md5: 97e1bb510f0df271383a72d131cd2ad6
+      size: 177
     - path: mtg_classifier.pkl
-      md5: db0f589c075ee4442f1adbc48b2ae213
-      size: 3548741
+      md5: f905f4c351748a59e7e8f66339505613
+      size: 780419

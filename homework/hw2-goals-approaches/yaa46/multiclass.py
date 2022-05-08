@@ -44,7 +44,7 @@ pipeline = Pipeline([
     min_df= 3, 
     max_df=0.8,
     stop_words='english',
-    ngram_range=(1,2))),
+    ngram_range=(ngrams["smallest"], ngrams["largest"]))),
     ('clf', LinearSVC())
 ])
 

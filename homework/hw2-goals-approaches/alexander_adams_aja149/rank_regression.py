@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
+# %%
 
-# In[36]:
+# %%
 
 
 import joblib
@@ -49,19 +50,19 @@ pipe = Pipeline(steps=[('pre_process', preprocess),
 
 #(4) Instantiate the search space
 search_space = [
-    # Naive Bayes Classifier
-    {'model' : [Lasso()]},
+    # Linear Support Vector Classifier
+    {'model' : [LinearSVC()]},
     
     # K-Nearest-Neighbors, also specifying values of K to test
-    {'model' : [KNeighborsRegressor()],
+    {'model' : [KNeighborsClassifier()],
     'model__n_neighbors':[5,10,25,50]},
     
     # Decision Tree, also specifying depth levels to test
-    {'model': [DecisionTreeRegressor()],
+    {'model': [DecisionTreeClassifier()],
     'model__max_depth':[2,3,4]},
     
     # Random forest, also specifying depth levels, numbers of estimators, and numbers of features to test
-    {'model' : [RandomForestRegressor()],
+    {'model' : [RandomForestClassifier()],
     'model__max_depth':[2,3,4],
     'model__n_estimators':[500,1000,1500],
     'model__max_features':[3,4,5]},
